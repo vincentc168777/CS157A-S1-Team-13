@@ -1,0 +1,43 @@
+# Eclipse specific
+.settings/
+.classpath
+.project
+
+# Build output
+build/
+target/
+bin/
+dist/
+out/
+
+# META-INF files (including MANIFEST.MF)
+**/META-INF/
+
+# Server configuration (don't share local server setup)
+Servers/
+.metadata/
+
+# IDE files
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+*.log.*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+
+# Temporary files
+*.tmp
+*.temp
