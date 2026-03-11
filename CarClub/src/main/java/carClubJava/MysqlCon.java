@@ -9,9 +9,9 @@ public class MysqlCon {
         	Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/cheng?autoReconnect=true&useSSL=false","root","root");
         	//here cheng is database name, root is username and password
         	Statement stmt=con.createStatement();
-        	ResultSet rs=stmt.executeQuery("select * from Student");
+        	ResultSet rs=stmt.executeQuery("select * from Cars");
         	while(rs.next())
-        	System.out.println(rs.getInt(1)+" "+rs.getString(2)+" "+rs.getString(3));
+        	System.out.println(rs.getString(1)+" "+rs.getString(2));
         	rs.close();
             stmt.close();
         	con.close();

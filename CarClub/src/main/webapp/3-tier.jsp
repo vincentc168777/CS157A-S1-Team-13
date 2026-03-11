@@ -1,19 +1,19 @@
 <%@ page import="java.sql.*"%>
 <html>
 <head>
-  <title>Three Tier Architecture Demo</title>
+  <title>Car Club</title>
 </head>
 <body>
-<h1>3-Tier Architecture Github</h1>
+<img src="<%= request.getContextPath() %>/images/dom.jpg" alt="A descriptive text for the image">
+<h1>Welcome to Car Club</h1>
 
 <table border="1">
   <tr>
-    <td>SJSU ID</td>
+    <td>Car ID</td>
     <td>Name</td>
-    <td>Major</td>
   </tr>
     <%
-     String db = "Team 13's";
+     String db = "Car Club's";
         String user; // assumes database name is the same as username
           user = "root";
         String password = "root";
@@ -25,14 +25,14 @@
 
             out.println(db + " database successfully opened.<br/><br/>");
 
-            out.println("Initial entries in table \"Student\": <br/>");
+            out.println("Initial entries in table \"Cars\": <br/>");
 
             Statement stmt = con.createStatement();
 
-            ResultSet rs = stmt.executeQuery("SELECT * FROM Student");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Cars");
 
             while (rs.next()) {
-         out.println("<tr>" + "<td>" +  rs.getInt(1) + "</td>"+ "<td>" +    rs.getString(2) + "</td>"+   "<td>" + rs.getString(3) + "</td>"  + "</tr>");
+         out.println("<tr>" + "<td>" +  rs.getString(1) + "</td>"+ "<td>" +  rs.getString(2) + "</td>");
             }
             rs.close();
             stmt.close();
