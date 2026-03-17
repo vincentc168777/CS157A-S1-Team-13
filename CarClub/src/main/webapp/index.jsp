@@ -214,7 +214,7 @@
   </nav>
 
   <div class="hero">
-    <div class="hero-tag">Est. 2024 — Your Garage, Online</div>
+    <div class="hero-tag">CarClub</div>
     <h1 class="hero-title">The <span>Ultimate</span><br>Car Registry</h1>
     <p class="hero-sub">Browse, search, and manage your car collection. Built for enthusiasts who take their fleet seriously.</p>
     <div class="hero-btns">
