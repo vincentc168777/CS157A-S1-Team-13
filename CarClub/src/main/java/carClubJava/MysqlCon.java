@@ -10,35 +10,39 @@ import java.time.Instant;
 
 public class MysqlCon {
 
-    public static List<String[]> getCars() {
-        List<String[]> cars = new ArrayList<>();
-        String user = "root";
-        String password = "root";
+	/**
+	 * Fetches all cars from the Cars table.
+	 * Columns: Car_ID, User_ID, Make, Model, Year, Description
+	 *
+	 * @return List of String arrays, one per car.
+	 */
+	public static List<String[]> getCars() {
+	    List<String[]> cars = new ArrayList<>();
+	    String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+	    String user = "root";
+	    String pass = "root";
 
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/cheng?autoReconnect=true&useSSL=false",
-                user, password
-            );
+	    try (Connection con = DriverManager.getConnection(url, user, pass);
+	         Statement stmt = con.createStatement();
+	         ResultSet rs = stmt.executeQuery("SELECT Car_ID, User_ID, Make, Model, Year, Description FROM Cars")) {
 
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM Cars");
+	        while (rs.next()) {
+	            cars.add(new String[]{
+	                rs.getString("Car_ID"),
+	                rs.getString("User_ID"),
+	                rs.getString("Make"),
+	                rs.getString("Model"),
+	                rs.getString("Year"),
+	                rs.getString("Description")
+	            });
+	        }
 
-            while (rs.next()) {
-                cars.add(new String[]{ rs.getString(1), rs.getString(2) });
-            }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
 
-            rs.close();
-            stmt.close();
-            con.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return cars;
-    }
+	    return cars;
+	}
     /**
     * Hashes a plain-text password using SHA-256.
     * For production, consider using BCrypt (add bcrypt library to your project).
@@ -75,7 +79,7 @@ public class MysqlCon {
     */
     public static boolean registerUser(String username, String email, String hashedPass,
                                    String displayName, String bio, String location) {
-        String url  = "jdbc:mysql://localhost:3306/cheng?autoReconnect=true&useSSL=false";
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
         String pass = "root";
 
@@ -99,6 +103,40 @@ public class MysqlCon {
 
         } catch (Exception e) {
         // Duplicate username or email will land here
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Inserts a new club into the Clubs table.
+     *
+     * @param managerID   The User_ID of the user creating the club.
+     * @param clubName    The name of the club.
+     * @param description Optional club description.
+     * @param location    Optional club location.
+     * @return true if insert succeeded, false if it failed.
+     */
+    public static boolean createClub(int managerID, String clubName, String description, String location) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "INSERT INTO Clubs (Manager_ID, Club_Name, Description, Location) " +
+                     "VALUES (?, ?, ?, ?)";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, managerID);
+            ps.setString(2, clubName);
+            ps.setString(3, description);
+            ps.setString(4, location);
+
+            int rows = ps.executeUpdate();
+            return rows > 0;
+
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }

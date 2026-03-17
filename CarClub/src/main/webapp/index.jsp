@@ -244,25 +244,33 @@
     %>
 
     <table id="carTable">
-      <thead>
-        <tr>
-          <th>Car ID</th>
-          <th>Name</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="carTableBody">
-        <%
-          for (String[] car : cars) {
-        %>
-        <tr>
-          <td><%= car[0] %></td>
-          <td><%= car[1] %></td>
-          <td><span class="status-badge">Active</span></td>
-        </tr>
-        <% } %>
-      </tbody>
-    </table>
+  <thead>
+    <tr>
+      <th>Car ID</th>
+      <th>Owner ID</th>
+      <th>Make</th>
+      <th>Model</th>
+      <th>Year</th>
+      <th>Description</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="carTableBody">
+    <%
+      for (String[] car : cars) {
+    %>
+    <tr>
+      <td><%= car[0] %></td>  <%-- Car_ID --%>
+      <td><%= car[1] %></td>  <%-- User_ID --%>
+      <td><%= car[2] %></td>  <%-- Make --%>
+      <td><%= car[3] %></td>  <%-- Model --%>
+      <td><%= car[4] %></td>  <%-- Year --%>
+      <td><%= car[5] %></td>  <%-- Description --%>
+      <td><span class="status-badge">Active</span></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
     <div class="no-results" id="noResults">No vehicles match your search.</div>
   </div>
 
