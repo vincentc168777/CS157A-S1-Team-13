@@ -83,7 +83,7 @@ public class MysqlCon {
         String user = "root";
         String pass = "root";
 
-        String sql = "INSERT INTO Users " +
+        String sql = "INSERT INTO User " +
                  "(Username, Email, Password, Display_Name, Bio, Location, Date_Created) " +
                  "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
