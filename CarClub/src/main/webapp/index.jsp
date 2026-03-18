@@ -201,6 +201,16 @@
       font-size: 12px;
       letter-spacing: 0.5px;
     }
+    
+    /* IMAGE */
+    .hero img {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+        margin: 20px auto;
+        display: block;
+        border: 0.5px solid #2a2a2a;
+    }
   </style>
 </head>
 <body>
@@ -217,6 +227,9 @@
     <div class="hero-tag">CarClub</div>
     <h1 class="hero-title">The <span>Ultimate</span><br>Car Registry</h1>
     <p class="hero-sub">Browse, search, and manage your car collection. Built for enthusiasts who take their fleet seriously.</p>
+    
+    <img src="<%= request.getContextPath() %>/images/dom.jpg" alt="A descriptive text for the image">
+    
     <div class="hero-btns">
       <a href="#garage" class="btn-primary">View Garage</a>
       <a href="addCar.jsp" class="btn-outline">+ Add a Car</a>
