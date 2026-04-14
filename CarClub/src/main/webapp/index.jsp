@@ -216,12 +216,21 @@
 <body>
 
   <nav>
-    <a class="logo" href="index.jsp">Car Club</a>
-    <div class="nav-links">
-      <a href="index.jsp">Garage</a>
-      <a href="addCar.jsp">Add Car</a>
-    </div>
-  </nav>
+  <a class="logo" href="index.jsp">Car Club</a>
+  <div class="nav-links">
+    <a href="index.jsp">Garage</a>
+    <a href="AddCar.jsp">Add Car</a>
+    <%
+      String loggedInUser = (String) session.getAttribute("username");
+      if (loggedInUser != null) {
+    %>
+      <a href="logout.jsp">Logout (<%= loggedInUser %>)</a>
+    <% } else { %>
+      <a href="login.jsp">Login</a>
+      <a href="register.jsp">Register</a>
+    <% } %>
+  </div>
+</nav>
 
   <div class="hero">
     <div class="hero-tag">CarClub</div>

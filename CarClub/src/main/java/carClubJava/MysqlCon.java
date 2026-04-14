@@ -9,6 +9,37 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 public class MysqlCon {
+	
+	/**
+	 * Validates login credentials.
+	 *
+	 * @param username  Username entered by the user.
+	 * @param hashedPass SHA-256 hashed password (call hashPassword() first).
+	 * @return The User_ID if credentials match, or -1 if login fails.
+	 */
+	public static int loginUser(String username, String hashedPass) {
+	    String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+	    String user = "root";
+	    String pass = "root";
+
+	    String sql = "SELECT User_ID FROM User WHERE Username = ? AND Password = ?";
+
+	    try (Connection con = DriverManager.getConnection(url, user, pass);
+	         PreparedStatement ps = con.prepareStatement(sql)) {
+
+	        ps.setString(1, username);
+	        ps.setString(2, hashedPass);
+
+	        ResultSet rs = ps.executeQuery();
+	        if (rs.next()) {
+	            return rs.getInt("User_ID");
+	        }
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return -1;
+	}
 
 	/**
 	 * Fetches all cars from the Cars table.

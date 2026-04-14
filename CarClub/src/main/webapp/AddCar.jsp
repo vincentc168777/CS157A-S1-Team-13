@@ -70,7 +70,7 @@
     String description = request.getParameter("description");
 
     // TODO: replace with (Integer) session.getAttribute("userID") once login is implemented
-    int userID = 1;
+    int userID = (Integer) session.getAttribute("userID");
 
     if (make == null || make.trim().isEmpty() ||
         model == null || model.trim().isEmpty() ||
