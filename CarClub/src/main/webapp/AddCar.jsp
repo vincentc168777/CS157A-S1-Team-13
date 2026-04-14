@@ -25,14 +25,14 @@
     .form-heading { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #555; margin-bottom: 36px; padding-bottom: 16px; border-bottom: 0.5px solid #1e1e1e; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .form-group { margin-bottom: 24px; }
-    .form-group label { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #555; margin-bottom: 8px; }
+    .form-group label { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #ffffff; margin-bottom: 8px; }
     .required-mark { color: #e8b44b; margin-left: 2px; }
     .form-group input, .form-group textarea { width: 100%; background: #131313; border: 0.5px solid #2a2a2a; color: #f0f0f0; padding: 12px 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; resize: none; }
     .form-group input::placeholder, .form-group textarea::placeholder { color: #444; }
     .form-group input:focus, .form-group textarea:focus { border-color: #e8b44b; }
     .form-group .hint { font-size: 11px; color: #444; margin-top: 6px; letter-spacing: 0.3px; }
     .form-actions { margin-top: 8px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .btn-primary { background: #e8b44b; color: #0a0a0a; border: none; padding: 13px 36px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .btn-primary { background: #e8b44b; color: #ffffff; border: none; padding: 13px 36px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
     .btn-primary:hover { background: #f5c76a; }
     .login-link { font-size: 13px; color: #555; }
     .login-link a { color: #e8b44b; text-decoration: none; }

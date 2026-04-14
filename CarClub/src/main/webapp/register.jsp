@@ -1,10 +1,11 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="carClubJava.MysqlCon" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Register — Car Club</title>
+  <title>Register - Car Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -101,7 +102,7 @@
     }
     .perk-text strong { color: #ccc; font-weight: 500; }
 
-    /* RIGHT PANEL — FORM */
+    /* RIGHT PANEL - FORM */
     .right-panel {
       padding: 60px 56px;
       overflow-y: auto;
@@ -123,7 +124,7 @@
       font-size: 11px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #555;
+      color: #ffffff;
       margin-bottom: 8px;
     }
     .required-mark { color: #e8b44b; margin-left: 2px; }
@@ -164,7 +165,7 @@
     .form-actions { margin-top: 8px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .btn-primary {
       background: #e8b44b;
-      color: #0a0a0a;
+      color: #ffffff;
       border: none;
       padding: 13px 36px;
       font-family: 'DM Sans', sans-serif;
@@ -234,7 +235,6 @@
 </nav>
 
 <%
-  /* ── Handle POST ── */
   String successMsg = null;
   String errorMsg   = null;
 
@@ -275,7 +275,7 @@
 
 <div class="page-layout">
 
-  <!-- LEFT — branding panel -->
+  <!-- LEFT - branding panel -->
   <div class="left-panel">
     <div class="left-tag">Member Registration</div>
     <h1 class="left-title">Join the<br><span>Club</span></h1>
@@ -283,20 +283,20 @@
     <div class="perks">
       <div class="perk">
         <div class="perk-dot"></div>
-        <div class="perk-text"><strong>Personal Garage</strong> — manage your registered vehicles in one place.</div>
+        <div class="perk-text"><strong>Personal Garage</strong> - manage your registered vehicles in one place.</div>
       </div>
       <div class="perk">
         <div class="perk-dot"></div>
-        <div class="perk-text"><strong>Community Profile</strong> — display name, bio, and location visible to other members.</div>
+        <div class="perk-text"><strong>Community Profile</strong> - display name, bio, and location visible to other members.</div>
       </div>
       <div class="perk">
         <div class="perk-dot"></div>
-        <div class="perk-text"><strong>Secure by default</strong> — passwords are cryptographically hashed, never stored in plain text.</div>
+        <div class="perk-text"><strong>Secure by default</strong> - passwords are cryptographically hashed, never stored in plain text.</div>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT — form -->
+  <!-- RIGHT - form -->
   <div class="right-panel">
 
     <% if (successMsg != null) { %>
@@ -332,7 +332,7 @@
       </div>
 
       <!-- OPTIONAL PROFILE FIELDS -->
-      <div class="section-divider">Profile details — optional</div>
+      <div class="section-divider">Profile details - optional</div>
 
       <div class="form-row">
         <div class="form-group">

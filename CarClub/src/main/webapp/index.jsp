@@ -13,7 +13,7 @@
     body {
       font-family: 'DM Sans', sans-serif;
       background: #0a0a0a;
-      color: #ffffff
+      color: #ffffff;
       min-height: 100vh;
     }
 
@@ -73,7 +73,7 @@
     .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
     .btn-primary {
       background: #e8b44b;
-      color: #0a0a0a;
+      color: #ffffff;
       border: none;
       padding: 13px 32px;
       font-family: 'DM Sans', sans-serif;
@@ -89,7 +89,7 @@
     .btn-primary:hover { background: #f5c76a; }
     .btn-outline {
       background: transparent;
-      color: #f0f0f0;
+      color: #ffffff;
       border: 0.5px solid #444;
       padding: 13px 32px;
       font-family: 'DM Sans', sans-serif;
@@ -282,12 +282,12 @@
       for (String[] car : cars) {
     %>
     <tr>
-      <td><%= car[0] %></td>  <%-- Car_ID --%>
-      <td><%= car[1] %></td>  <%-- User_ID --%>
-      <td><%= car[2] %></td>  <%-- Make --%>
-      <td><%= car[3] %></td>  <%-- Model --%>
-      <td><%= car[4] %></td>  <%-- Year --%>
-      <td><%= car[5] %></td>  <%-- Description --%>
+      <td><%= car[0] %></td>
+      <td><%= car[1] %></td>
+      <td><%= car[2] %></td>
+      <td><%= car[3] %></td>
+      <td><%= car[4] %></td>
+      <td><%= car[5] %></td>
       <td><span class="status-badge">Active</span></td>
     </tr>
     <% } %>
