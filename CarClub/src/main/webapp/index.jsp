@@ -13,7 +13,7 @@
     body {
       font-family: 'DM Sans', sans-serif;
       background: #0a0a0a;
-      color: #f0f0f0;
+      color: #ffffff
       min-height: 100vh;
     }
 

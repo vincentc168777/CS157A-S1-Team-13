@@ -141,4 +141,39 @@ public class MysqlCon {
             return false;
         }
     }
+    
+    /**
+     * Inserts a new car into the Cars table.
+     *
+     * @param userID      The User_ID of the owner.
+     * @param make        Car make (e.g. "Toyota"). Required.
+     * @param model       Car model (e.g. "Supra"). Required.
+     * @param year        Model year (e.g. 2024). Required.
+     * @param description Optional description / modifications.
+     * @return true if insert succeeded, false otherwise.
+     */
+    public static boolean addCar(int userID, String make, String model, int year, String description) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "INSERT INTO Cars (User_ID, Make, Model, Year, Description) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userID);
+            ps.setString(2, make);
+            ps.setString(3, model);
+            ps.setInt(4, year);
+            ps.setString(5, description);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
