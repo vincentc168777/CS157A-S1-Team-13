@@ -61,8 +61,9 @@
       line-height: 1;
       letter-spacing: 2px;
       margin-bottom: 24px;
+      color: #e8b44b;
     }
-    .hero-title span { color: #e8b44b; }
+    .hero-title span { color: inherit; }
     .hero-sub {
       color: #888;
       font-size: 15px;
@@ -234,14 +235,14 @@
 
   <div class="hero">
     <div class="hero-tag">CarClub</div>
-    <h1 class="hero-title">The <span>Ultimate</span><br>Car Registry</h1>
+    <h1 class="hero-title">The Ultimate<br>Car Registry</h1>
     <p class="hero-sub">Browse, search, and manage your car collection. Built for enthusiasts who take their fleet seriously.</p>
     
     <img src="<%= request.getContextPath() %>/images/dom.jpg" alt="A descriptive text for the image">
     
     <div class="hero-btns">
       <a href="#garage" class="btn-primary">View Garage</a>
-      <a href="addCar.jsp" class="btn-outline">+ Add a Car</a>
+      <a href="AddCar.jsp" class="btn-outline">+ Add a Car</a>
     </div>
   </div>
 
@@ -250,7 +251,7 @@
     <input
       type="text"
       id="searchInput"
-      placeholder="Search by name..."
+      placeholder="Search by make, model, year, owner, or description..."
       oninput="filterTable()"
     />
   </div>
@@ -302,27 +303,35 @@
   </footer>
 
   <script>
-    const rows = Array.from(document.querySelectorAll('#carTableBody tr'));
-    const totalCars = rows.length;
-
-    document.getElementById('carCount').textContent = totalCars + ' vehicles';
-    document.getElementById('totalCount').textContent = totalCars + ' vehicles registered';
+    function updateCounts() {
+      const visibleRows = Array.from(document.querySelectorAll('#carTableBody tr')).filter(row => row.style.display !== 'none');
+      document.getElementById('carCount').textContent = visibleRows.length + ' vehicles';
+      document.getElementById('totalCount').textContent = visibleRows.length + ' vehicles registered';
+    }
 
     function filterTable() {
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const rows = Array.from(document.querySelectorAll('#carTableBody tr'));
       let visible = 0;
 
       rows.forEach(row => {
-        const name = row.cells[1].textContent.toLowerCase();
-        const id = row.cells[0].textContent.toLowerCase();
-        const match = name.includes(query) || id.includes(query);
+        // Columns: 0=Car ID, 1=Owner ID, 2=Make, 3=Model, 4=Year, 5=Description
+        const cells = row.getElementsByTagName('td');
+        const searchText = [0,1,2,3,4,5].map(i => cells[i].textContent.toLowerCase()).join(' ');
+        const match = searchText.includes(query);
         row.style.display = match ? '' : 'none';
         if (match) visible++;
       });
 
       document.getElementById('carCount').textContent = visible + ' vehicles';
       document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+      document.getElementById('totalCount').textContent = visible + ' vehicles registered';
     }
+
+    // Initialize counts on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      updateCounts();
+    });
   </script>
 </body>
 </html>
