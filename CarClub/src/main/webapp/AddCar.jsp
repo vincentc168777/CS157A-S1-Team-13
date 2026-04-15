@@ -55,7 +55,6 @@
   <a class="logo" href="index.jsp">Car Club</a>
   <div class="nav-links">
     <a href="index.jsp">Garage</a>
-    <a href="register.jsp">Register</a>
   </div>
 </nav>
 
