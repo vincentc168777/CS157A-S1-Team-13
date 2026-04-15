@@ -235,8 +235,8 @@
 
   <div class="hero">
     <div class="hero-tag">CarClub</div>
-    <h1 class="hero-title">The Ultimate<br>Car Registry</h1>
-    <p class="hero-sub">Browse, search, and manage your car collection. Built for enthusiasts who take their fleet seriously.</p>
+    <h1 class="hero-title">My<br>Cars</h1>
+    <p class="hero-sub">Browse, search, and manage your car collection.</p>
     
     <img src="<%= request.getContextPath() %>/images/dom.jpg" alt="A descriptive text for the image">
     
