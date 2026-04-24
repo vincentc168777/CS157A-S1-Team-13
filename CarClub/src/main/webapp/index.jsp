@@ -216,6 +216,26 @@
 </head>
 <body>
 
+<%
+  // --- Handle car deletion POST ---
+  String deleteMsg = null;
+  Integer userIDObj = (Integer) session.getAttribute("userID");
+  int userID = userIDObj != null ? userIDObj : -1;
+  if ("POST".equalsIgnoreCase(request.getMethod()) && request.getParameter("deleteCarID") != null && userID != -1) {
+    try {
+      int carID = Integer.parseInt(request.getParameter("deleteCarID"));
+      boolean deleted = MysqlCon.deleteCar(carID, userID);
+      if (deleted) {
+        deleteMsg = "Vehicle removed.";
+      } else {
+        deleteMsg = "Could not remove vehicle (not found or not owned).";
+      }
+    } catch (Exception e) {
+      deleteMsg = "Error removing vehicle.";
+    }
+  }
+%>
+
   <nav>
   <a class="logo" href="index.jsp">Car Club</a>
   <div class="nav-links">
@@ -225,6 +245,7 @@
       String loggedInUser = (String) session.getAttribute("username");
       if (loggedInUser != null) {
     %>
+      <a href="deleteAccount.jsp" style="color:#a00; font-weight:bold;">Delete Account</a>
       <a href="logout.jsp">Logout (<%= loggedInUser %>)</a>
     <% } else { %>
       <a href="login.jsp">Login</a>
@@ -257,6 +278,11 @@
   </div>
 
   <div class="garage-section" id="garage">
+        <% if (deleteMsg != null) { %>
+          <div style="color:#e8b44b; background:#222; padding:10px; margin-bottom:16px; border-radius:6px; text-align:center;">
+            <%= deleteMsg %>
+          </div>
+        <% } %>
     <div class="section-header">
       <span class="section-title">Registered Vehicles</span>
       <span class="car-count" id="carCount"></span>
@@ -276,11 +302,14 @@
       <th>Year</th>
       <th>Description</th>
       <th>Status</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody id="carTableBody">
     <%
       for (String[] car : cars) {
+        int carId = Integer.parseInt(car[0]);
+        int ownerId = Integer.parseInt(car[1]);
     %>
     <tr>
       <td><%= car[0] %></td>
@@ -290,6 +319,14 @@
       <td><%= car[4] %></td>
       <td><%= car[5] %></td>
       <td><span class="status-badge">Active</span></td>
+      <td>
+        <% if (userIDObj != null && userID == ownerId) { %>
+          <form method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to remove this vehicle?');">
+            <input type="hidden" name="deleteCarID" value="<%= carId %>" />
+            <button type="submit" class="btn-outline" style="padding:4px 12px; font-size:11px;">Delete</button>
+          </form>
+        <% } %>
+      </td>
     </tr>
     <% } %>
   </tbody>
