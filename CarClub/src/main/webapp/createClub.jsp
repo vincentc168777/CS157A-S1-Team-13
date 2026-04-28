@@ -64,6 +64,11 @@
     .club-owner { color: #e8b44b; }
     .empty-state { padding: 40px; text-align: center; background: #0e0e0e; border: 0.5px solid #1a1a1a; color: #444; font-size: 13px; }
 
+    .club-search { margin-bottom: 24px; }
+    .club-search input { width: 100%; background: #131313; border: 0.5px solid #2a2a2a; color: #f0f0f0; padding: 10px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    .club-search input::placeholder { color: #444; }
+    .club-search input:focus { border-color: #e8b44b; }
+
     @media (max-width: 900px) {
       .page-layout { grid-template-columns: 1fr; }
       .left-panel { display: none; }
@@ -118,7 +123,7 @@
     }
   }
 
-  // Load all clubs for the public listing
+  // Load all clubs for the directory listing
   List<String[]> clubs = MysqlCon.getClubs();
 %>
 
@@ -222,7 +227,13 @@
 
 <!-- All Clubs Listing -->
 <div class="clubs-section">
-  <div class="clubs-header">All Clubs (<%= clubs.size() %>)</div>
+
+  <div class="club-search">
+    <input type="text" id="clubFilter" placeholder="Filter clubs by name, description, or location..."/>
+  </div>
+
+  <div class="clubs-header" id="clubsHeader" data-total="<%= clubs.size() %>">All Clubs (<%= clubs.size() %>)</div>
+
   <% if (clubs.isEmpty()) { %>
     <div class="empty-state">No clubs yet. Be the first to create one above.</div>
   <% } else { %>
@@ -245,6 +256,7 @@
         </div>
       <% } %>
     </div>
+    <div id="noResults" class="empty-state" style="display:none;">No clubs match your filter.</div>
   <% } %>
 </div>
 
@@ -252,6 +264,31 @@
   function updateCharCount(el, countId, max) {
     document.getElementById(countId).textContent = el.value.length;
   }
+
+  (function () {
+    var input = document.getElementById('clubFilter');
+    if (!input) return;
+    var total = parseInt(document.getElementById('clubsHeader').getAttribute('data-total'), 10);
+
+    input.addEventListener('input', function () {
+      var q = this.value.toLowerCase().trim();
+      var cards = document.querySelectorAll('.club-card');
+      var visible = 0;
+
+      cards.forEach(function (card) {
+        var matches = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+        card.style.display = matches ? '' : 'none';
+        if (matches) visible++;
+      });
+
+      document.getElementById('clubsHeader').textContent =
+        q ? 'Showing ' + visible + ' of ' + total + ' clubs'
+          : 'All Clubs (' + total + ')';
+
+      var noResults = document.getElementById('noResults');
+      if (noResults) noResults.style.display = (q && visible === 0) ? '' : 'none';
+    });
+  }());
 </script>
 
 </body>

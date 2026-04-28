@@ -248,7 +248,6 @@
       <a href="AddCar.jsp">Add Car</a>
       <a href="createClub.jsp">Clubs</a>
       <a href="viewProfile.jsp?id=<%= loggedInID %>">My Profile</a>
-      <a href="editProfile.jsp">Edit Profile</a>
       <a href="deleteAccount.jsp" style="color:#a00;">Delete Account</a>
       <a href="logout.jsp">Logout (<%= loggedInUser %>)</a>
     <% } else { %>

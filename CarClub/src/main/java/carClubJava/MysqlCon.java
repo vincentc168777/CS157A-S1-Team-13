@@ -385,4 +385,50 @@ public class MysqlCon {
         }
         return clubs;
     }
+
+    /**
+     * Searches clubs in the Clubs table by keyword.
+     * Searches in Club_Name, Description, and Location.
+     * Columns: Club_ID, Manager_ID, Club_Name, Description, Location, Manager_Username
+     *
+     * @param keyword The search keyword.
+     * @return List of String arrays, one per matching club.
+     */
+    public static List<String[]> searchClubs(String keyword) {
+        List<String[]> clubs = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT c.Club_ID, c.Manager_ID, c.Club_Name, c.Description, " +
+                     "c.Location, u.Username AS Manager_Username " +
+                     "FROM Clubs c JOIN User u ON c.Manager_ID = u.User_ID " +
+                     "WHERE c.Club_Name LIKE ? OR c.Description LIKE ? OR c.Location LIKE ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    clubs.add(new String[]{
+                        rs.getString("Club_ID"),
+                        rs.getString("Manager_ID"),
+                        rs.getString("Club_Name"),
+                        rs.getString("Description"),
+                        rs.getString("Location"),
+                        rs.getString("Manager_Username")
+                    });
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return clubs;
+    }
 }
