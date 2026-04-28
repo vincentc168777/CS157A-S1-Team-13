@@ -280,4 +280,109 @@ public class MysqlCon {
             return false;
         }
     }
+
+    /**
+     * Updates a user's public profile fields.
+     *
+     * @param userID      The User_ID to update.
+     * @param displayName New display name (can be empty string).
+     * @param bio         New bio (can be empty string).
+     * @param location    New city/state string (can be empty string).
+     * @return true if the row was updated, false otherwise.
+     */
+    public static boolean updateProfile(int userID, String displayName, String bio, String location) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "UPDATE User SET Display_Name = ?, Bio = ?, Location = ? WHERE User_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, displayName);
+            ps.setString(2, bio);
+            ps.setString(3, location);
+            ps.setInt(4, userID);
+
+            return ps.executeUpdate() == 1;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Fetches a single user's public profile by User_ID.
+     *
+     * @param userID The User_ID to look up.
+     * @return String array [Username, Display_Name, Bio, Location, Date_Created],
+     *         or null if not found.
+     */
+    public static String[] getUserProfile(int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT Username, Display_Name, Bio, Location, Date_Created " +
+                     "FROM User WHERE User_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userID);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new String[]{
+                    rs.getString("Username"),
+                    rs.getString("Display_Name"),
+                    rs.getString("Bio"),
+                    rs.getString("Location"),
+                    rs.getString("Date_Created")
+                };
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Fetches all clubs from the Clubs table.
+     * Columns: Club_ID, Manager_ID, Club_Name, Description, Location
+     *
+     * @return List of String arrays, one per club.
+     */
+    public static List<String[]> getClubs() {
+        List<String[]> clubs = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT c.Club_ID, c.Manager_ID, c.Club_Name, c.Description, " +
+                     "c.Location, u.Username AS Manager_Username " +
+                     "FROM Clubs c JOIN User u ON c.Manager_ID = u.User_ID";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                clubs.add(new String[]{
+                    rs.getString("Club_ID"),
+                    rs.getString("Manager_ID"),
+                    rs.getString("Club_Name"),
+                    rs.getString("Description"),
+                    rs.getString("Location"),
+                    rs.getString("Manager_Username")
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return clubs;
+    }
 }

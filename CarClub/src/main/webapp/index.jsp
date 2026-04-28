@@ -240,12 +240,16 @@
   <a class="logo" href="index.jsp">Car Club</a>
   <div class="nav-links">
     <a href="index.jsp">Garage</a>
-    <a href="AddCar.jsp">Add Car</a>
     <%
       String loggedInUser = (String) session.getAttribute("username");
+      Integer loggedInID  = (Integer) session.getAttribute("userID");
       if (loggedInUser != null) {
     %>
-      <a href="deleteAccount.jsp" style="color:#a00; font-weight:bold;">Delete Account</a>
+      <a href="AddCar.jsp">Add Car</a>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="viewProfile.jsp?id=<%= loggedInID %>">My Profile</a>
+      <a href="editProfile.jsp">Edit Profile</a>
+      <a href="deleteAccount.jsp" style="color:#a00;">Delete Account</a>
       <a href="logout.jsp">Logout (<%= loggedInUser %>)</a>
     <% } else { %>
       <a href="login.jsp">Login</a>
@@ -256,15 +260,31 @@
 
   <div class="hero">
     <div class="hero-tag">CarClub</div>
-    <h1 class="hero-title">My<br>Cars</h1>
-    <p class="hero-sub">Browse, search, and manage your car collection.</p>
+    <%
+  String _hero = (String) session.getAttribute("username");
+  if (_hero != null) {
+%>
+  <h1 class="hero-title">Welcome<br><span style="color:#fff"><%= _hero %></span></h1>
+  <p class="hero-sub">Manage your garage, edit your profile, and connect with clubs.</p>
+<% } else { %>
+  <h1 class="hero-title">The<br><span>Garage</span></h1>
+  <p class="hero-sub">Browse registered vehicles, join a club, and connect with enthusiasts.</p>
+<% } %>
     
     <img src="<%= request.getContextPath() %>/images/dom.jpg" alt="A descriptive text for the image">
     
     <div class="hero-btns">
-      <a href="#garage" class="btn-primary">View Garage</a>
-      <a href="AddCar.jsp" class="btn-outline">+ Add a Car</a>
-    </div>
+  <a href="#garage" class="btn-primary">View Garage</a>
+  <%
+    String _u = (String) session.getAttribute("username");
+    if (_u != null) {
+  %>
+    <a href="AddCar.jsp" class="btn-outline">+ Add a Car</a>
+    <a href="createClub.jsp" class="btn-outline">Browse Clubs</a>
+  <% } else { %>
+    <a href="register.jsp" class="btn-outline">Join Now</a>
+  <% } %>
+	</div>
   </div>
 
   <div class="search-section">
