@@ -8,6 +8,7 @@ Current Features:
 7. Delete Account
 8. Edit Profile
 9. Create Club
+10. Search Clubs
 
 <img width="1296" height="860" alt="image" src="https://github.com/user-attachments/assets/6843fe57-89f4-4fe3-8ff1-11fc7a107c83" />
 
