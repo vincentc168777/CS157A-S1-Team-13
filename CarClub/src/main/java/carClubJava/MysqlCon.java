@@ -386,6 +386,104 @@ public class MysqlCon {
         return clubs;
     }
 
+    public static List<String[]> getUserClubs(int userID) {
+        List<String[]> clubs = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "SELECT c.Club_ID, c.Manager_ID, c.Club_Name, c.Description, " +
+                      "c.Location, u.Username AS Manager_Username " +
+                      "FROM Clubs c JOIN User u ON c.Manager_ID = u.User_ID " +
+                      "WHERE c.Manager_ID = ? " +
+                      "OR c.Club_ID IN (SELECT Club_ID FROM club_membership WHERE User_ID = ?) " +
+                      "ORDER BY c.Club_Name";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            ps.setInt(2, userID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    clubs.add(new String[]{
+                        rs.getString("Club_ID"),
+                        rs.getString("Manager_ID"),
+                        rs.getString("Club_Name"),
+                        rs.getString("Description"),
+                        rs.getString("Location"),
+                        rs.getString("Manager_Username")
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return clubs;
+    }
+
+    public static boolean joinClub(int clubID, int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "INSERT IGNORE INTO club_membership (Club_ID, User_ID) VALUES (?, ?)";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clubID);
+            ps.setInt(2, userID);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean leaveClub(int clubID, int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "DELETE FROM club_membership WHERE Club_ID = ? AND User_ID = ?";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clubID);
+            ps.setInt(2, userID);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean isUserInClub(int clubID, int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "SELECT 1 FROM club_membership WHERE Club_ID = ? AND User_ID = ?";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clubID);
+            ps.setInt(2, userID);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static int getClubMemberCount(int clubID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "SELECT COUNT(*) FROM club_membership WHERE Club_ID = ?";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clubID);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     /**
      * Searches clubs in the Clubs table by keyword.
      * Searches in Club_Name, Description, and Location.

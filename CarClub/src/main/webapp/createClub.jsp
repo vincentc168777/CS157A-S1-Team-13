@@ -64,6 +64,13 @@
     .club-owner { color: #e8b44b; }
     .empty-state { padding: 40px; text-align: center; background: #0e0e0e; border: 0.5px solid #1a1a1a; color: #444; font-size: 13px; }
 
+    .club-actions { margin-top: 16px; }
+    .badge-owner { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #e8b44b; border: 0.5px solid #e8b44b; padding: 5px 12px; display: inline-block; }
+    .btn-join { background: #e8b44b; color: #0a0a0a; border: none; padding: 7px 18px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .btn-join:hover { background: #f5c76a; }
+    .btn-leave { background: transparent; color: #888; border: 0.5px solid #333; padding: 7px 18px; font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+    .btn-leave:hover { border-color: #666; color: #f0f0f0; }
+
     .club-search { margin-bottom: 24px; }
     .club-search input { width: 100%; background: #131313; border: 0.5px solid #2a2a2a; color: #f0f0f0; padding: 10px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
     .club-search input::placeholder { color: #444; }
@@ -89,42 +96,78 @@
     return;
   }
 
-  String successMsg = null;
-  String errorMsg   = null;
+  String successMsg  = null;
+  String errorMsg    = null;
+  String actionMsg   = null;
+  String actionError = null;
 
   // ── Handle POST ────────────────────────────────────────────────────────────
   if ("POST".equalsIgnoreCase(request.getMethod())) {
-    String clubName    = request.getParameter("clubName");
-    String description = request.getParameter("description");
-    String location    = request.getParameter("location");
+    String joinClubIDStr  = request.getParameter("joinClubID");
+    String leaveClubIDStr = request.getParameter("leaveClubID");
 
-    clubName    = (clubName    != null) ? clubName.trim()    : "";
-    description = (description != null) ? description.trim() : "";
-    location    = (location    != null) ? location.trim()    : "";
-
-    if (clubName.isEmpty()) {
-      errorMsg = "Club name is required.";
-    } else if (description.isEmpty()) {
-      errorMsg = "Description is required.";
-    } else if (clubName.length() > 100) {
-      errorMsg = "Club name must be 100 characters or fewer.";
-    } else if (description.length() > 500) {
-      errorMsg = "Description must be 500 characters or fewer.";
-    } else if (location.length() > 100) {
-      errorMsg = "Location must be 100 characters or fewer.";
+    if (joinClubIDStr != null) {
+      try {
+        int joinID = Integer.parseInt(joinClubIDStr);
+        if (MysqlCon.isUserInClub(joinID, sessionUserID)) {
+          actionError = "You are already a member of this club.";
+        } else {
+          boolean ok = MysqlCon.joinClub(joinID, sessionUserID);
+          if (ok) {
+            actionMsg = "You joined the club!";
+          } else {
+            actionError = "Could not join club. Check server logs for details.";
+          }
+        }
+      } catch (NumberFormatException e) {
+        actionError = "Invalid club ID.";
+      }
+    } else if (leaveClubIDStr != null) {
+      try {
+        int leaveID = Integer.parseInt(leaveClubIDStr);
+        boolean ok = MysqlCon.leaveClub(leaveID, sessionUserID);
+        if (ok) {
+          actionMsg = "You left the club.";
+        } else {
+          actionError = "Could not leave club.";
+        }
+      } catch (NumberFormatException e) {
+        actionError = "Invalid club ID.";
+      }
     } else {
-      boolean ok = MysqlCon.createClub(sessionUserID, clubName, description, location);
-      if (ok) {
-        successMsg = "\"" + clubName + "\" has been created. You are the club owner.";
+      String clubName    = request.getParameter("clubName");
+      String description = request.getParameter("description");
+      String location    = request.getParameter("location");
+
+      clubName    = (clubName    != null) ? clubName.trim()    : "";
+      description = (description != null) ? description.trim() : "";
+      location    = (location    != null) ? location.trim()    : "";
+
+      if (clubName.isEmpty()) {
+        errorMsg = "Club name is required.";
+      } else if (description.isEmpty()) {
+        errorMsg = "Description is required.";
+      } else if (clubName.length() > 100) {
+        errorMsg = "Club name must be 100 characters or fewer.";
+      } else if (description.length() > 500) {
+        errorMsg = "Description must be 500 characters or fewer.";
+      } else if (location.length() > 100) {
+        errorMsg = "Location must be 100 characters or fewer.";
       } else {
-        // Most likely a UNIQUE constraint violation on Club_Name
-        errorMsg = "Club creation failed. That club name may already be taken.";
+        boolean ok = MysqlCon.createClub(sessionUserID, clubName, description, location);
+        if (ok) {
+          successMsg = "\"" + clubName + "\" has been created. You are the club owner.";
+        } else {
+          // Most likely a UNIQUE constraint violation on Club_Name
+          errorMsg = "Club creation failed. That club name may already be taken.";
+        }
       }
     }
   }
 
   // Load all clubs for the directory listing
-  List<String[]> clubs = MysqlCon.getClubs();
+  List<String[]> clubs   = MysqlCon.getClubs();
+  List<String[]> myClubs = MysqlCon.getUserClubs(sessionUserID);
 %>
 
 <nav>
@@ -225,8 +268,57 @@
   </div>
 </div>
 
+<!-- My Clubs Section -->
+<div class="clubs-section" style="padding-bottom:40px; border-bottom:0.5px solid #1a1a1a;">
+  <div class="clubs-header" style="color:#e8b44b; border-color:#2a2a2a;">
+    My Clubs (<%= myClubs.size() %>)
+  </div>
+
+  <% if (myClubs.isEmpty()) { %>
+    <div class="empty-state">You haven't joined any clubs yet. Browse the directory below to find one.</div>
+  <% } else { %>
+    <div class="clubs-grid">
+      <% for (String[] mc : myClubs) {
+        int    mcID    = Integer.parseInt(mc[0]);
+        String mcName  = mc[2];
+        String mcDesc  = mc[3] != null ? mc[3] : "";
+        String mcLoc   = (mc[4] != null && !mc[4].isEmpty()) ? mc[4] : null;
+        String mcOwner = mc[5];
+        boolean mcIsOwner = mc[1] != null && mc[1].equals(String.valueOf(sessionUserID));
+        int    mcCount = MysqlCon.getClubMemberCount(mcID);
+      %>
+        <div class="club-card">
+          <div class="club-name"><%= mcName %></div>
+          <div class="club-desc"><%= mcDesc %></div>
+          <div class="club-meta">
+            <% if (mcLoc != null) { %><span>📍 <%= mcLoc %></span><% } %>
+            <span class="club-owner">Owner: <%= mcIsOwner ? "You" : "@" + mcOwner %></span>
+            <span><%= mcCount %> member<%= mcCount != 1 ? "s" : "" %></span>
+          </div>
+          <div class="club-actions">
+            <% if (mcIsOwner) { %>
+              <span class="badge-owner">Owner</span>
+            <% } else { %>
+              <form method="POST" action="createClub.jsp" style="display:inline;">
+                <input type="hidden" name="leaveClubID" value="<%= mcID %>"/>
+                <button type="submit" class="btn-leave">Leave Club</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+</div>
+
 <!-- All Clubs Listing -->
 <div class="clubs-section">
+  <% if (actionMsg != null) { %>
+    <div class="alert alert-success" style="margin-bottom:24px;"><%= actionMsg %></div>
+  <% } %>
+  <% if (actionError != null) { %>
+    <div class="alert alert-error" style="margin-bottom:24px;"><%= actionError %></div>
+  <% } %>
 
   <div class="club-search">
     <input type="text" id="clubFilter" placeholder="Filter clubs by name, description, or location..."/>
@@ -240,11 +332,14 @@
     <div class="clubs-grid">
       <% for (String[] club : clubs) {
         // club: [0]=Club_ID, [1]=Manager_ID, [2]=Club_Name, [3]=Description, [4]=Location, [5]=Manager_Username
-        String cName    = club[2];
-        String cDesc    = club[3] != null ? club[3] : "";
-        String cLoc     = (club[4] != null && !club[4].isEmpty()) ? club[4] : null;
-        String cOwner   = club[5];
-        boolean isOwner = club[1] != null && club[1].equals(String.valueOf(sessionUserID));
+        int    clubIDInt   = Integer.parseInt(club[0]);
+        String cName       = club[2];
+        String cDesc       = club[3] != null ? club[3] : "";
+        String cLoc        = (club[4] != null && !club[4].isEmpty()) ? club[4] : null;
+        String cOwner      = club[5];
+        boolean isOwner    = club[1] != null && club[1].equals(String.valueOf(sessionUserID));
+        boolean isMember   = !isOwner && MysqlCon.isUserInClub(clubIDInt, sessionUserID);
+        int     memberCount = MysqlCon.getClubMemberCount(clubIDInt);
       %>
         <div class="club-card">
           <div class="club-name"><%= cName %></div>
@@ -252,6 +347,22 @@
           <div class="club-meta">
             <% if (cLoc != null) { %><span>📍 <%= cLoc %></span><% } %>
             <span class="club-owner">Owner: <%= isOwner ? "You" : "@" + cOwner %></span>
+            <span><%= memberCount %> member<%= memberCount != 1 ? "s" : "" %></span>
+          </div>
+          <div class="club-actions">
+            <% if (isOwner) { %>
+              <span class="badge-owner">Owner</span>
+            <% } else if (isMember) { %>
+              <form method="POST" action="createClub.jsp" style="display:inline;">
+                <input type="hidden" name="leaveClubID" value="<%= clubIDInt %>"/>
+                <button type="submit" class="btn-leave">Leave Club</button>
+              </form>
+            <% } else { %>
+              <form method="POST" action="createClub.jsp" style="display:inline;">
+                <input type="hidden" name="joinClubID" value="<%= clubIDInt %>"/>
+                <button type="submit" class="btn-join">Join Club</button>
+              </form>
+            <% } %>
           </div>
         </div>
       <% } %>

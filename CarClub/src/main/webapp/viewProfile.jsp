@@ -48,6 +48,14 @@
     .car-desc { font-size: 13px; color: #666; line-height: 1.5; }
     .empty-state { padding: 40px; text-align: center; background: #0e0e0e; border: 0.5px solid #1a1a1a; color: #444; font-size: 13px; letter-spacing: 0.5px; }
 
+    /* Club grid */
+    .club-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: #1a1a1a; }
+    .club-card { background: #0e0e0e; padding: 24px; }
+    .club-badge { font-size: 10px; letter-spacing: 2px; color: #e8b44b; text-transform: uppercase; margin-bottom: 8px; }
+    .club-card-name { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 6px; }
+    .club-card-desc { font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 10px; }
+    .club-card-meta { display: flex; gap: 12px; font-size: 11px; color: #444; letter-spacing: 0.5px; text-transform: uppercase; flex-wrap: wrap; }
+
     /* Not found */
     .not-found { text-align: center; padding: 120px 32px; }
     .not-found h2 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #333; margin-bottom: 16px; }
@@ -115,6 +123,9 @@
       userCars.add(car);
     }
   }
+
+  // Load this user's clubs
+  List<String[]> userClubs = MysqlCon.getUserClubs(targetID);
 %>
 
 <div class="profile-wrapper">
@@ -162,6 +173,36 @@
             <div class="car-year"><%= car[4] %></div>
             <div class="car-name"><%= car[2] %> <%= car[3] %></div>
             <div class="car-desc"><%= desc %></div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Clubs section -->
+  <div class="section">
+    <div class="section-title">Clubs (<%= userClubs.size() %>)</div>
+    <% if (userClubs.isEmpty()) { %>
+      <div class="empty-state">
+        <%= isOwnProfile ? "You haven't joined any clubs. <a href='createClub.jsp' style='color:#e8b44b;text-decoration:none;'>Browse clubs →</a>" : "Not a member of any clubs yet." %>
+      </div>
+    <% } else { %>
+      <div class="club-grid">
+        <% for (String[] uc : userClubs) {
+          // uc: [0]=Club_ID, [1]=Manager_ID, [2]=Club_Name, [3]=Description, [4]=Location, [5]=Manager_Username
+          boolean ucIsOwner = uc[1] != null && uc[1].equals(String.valueOf(targetID));
+          String  ucDesc    = (uc[3] != null && !uc[3].isEmpty()) ? uc[3] : "No description.";
+          String  ucLoc     = (uc[4] != null && !uc[4].isEmpty()) ? uc[4] : null;
+          int     ucCount   = MysqlCon.getClubMemberCount(Integer.parseInt(uc[0]));
+        %>
+          <div class="club-card">
+            <% if (ucIsOwner) { %><div class="club-badge">Owner</div><% } %>
+            <div class="club-card-name"><%= uc[2] %></div>
+            <div class="club-card-desc"><%= ucDesc %></div>
+            <div class="club-card-meta">
+              <% if (ucLoc != null) { %><span>📍 <%= ucLoc %></span><% } %>
+              <span><%= ucCount %> member<%= ucCount != 1 ? "s" : "" %></span>
+            </div>
           </div>
         <% } %>
       </div>
