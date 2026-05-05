@@ -246,6 +246,7 @@
       if (loggedInUser != null) {
     %>
       <a href="AddCar.jsp">Add Car</a>
+      <a href="uploadCarPhoto.jsp">Car Photos</a>
       <a href="createClub.jsp">Clubs</a>
       <a href="events.jsp">Events</a>
       <a href="viewProfile.jsp?id=<%= loggedInID %>">My Profile</a>
@@ -281,6 +282,7 @@
     if (_u != null) {
   %>
     <a href="AddCar.jsp" class="btn-outline">+ Add a Car</a>
+    <a href="uploadCarPhoto.jsp" class="btn-outline"> Car Photos</a>
     <a href="createClub.jsp" class="btn-outline">Browse Clubs</a>
     <a href="events.jsp" class="btn-outline">Events</a>
   <% } else { %>
@@ -344,6 +346,7 @@
       <td><span class="status-badge">Active</span></td>
       <td>
         <% if (userIDObj != null && userID == ownerId) { %>
+          <a href="uploadCarPhoto.jsp?carID=<%= carId %>" class="btn-outline" style="padding:4px 12px; font-size:11px; margin-right:6px; text-decoration:none; display:inline-block;">Photos</a>
           <form method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to remove this vehicle?');">
             <input type="hidden" name="deleteCarID" value="<%= carId %>" />
             <button type="submit" class="btn-outline" style="padding:4px 12px; font-size:11px;">Delete</button>
