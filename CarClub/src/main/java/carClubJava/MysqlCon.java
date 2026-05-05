@@ -20,7 +20,7 @@ public class MysqlCon {
             public static boolean deleteAccount(int userID) {
                 String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
                 String user = "root";
-                String pass = "Quimby321#";
+                String pass = "Horse7plum!";
 
                 try (Connection con = DriverManager.getConnection(url, user, pass)) {
                     con.setAutoCommit(false);
@@ -68,7 +68,7 @@ public class MysqlCon {
         public static boolean deleteCar(int carID, int userID) {
             String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
             String user = "root";
-            String pass = "Quimby321#";
+            String pass = "Horse7plum!";
 
             String sql = "DELETE FROM Cars WHERE Car_ID = ? AND User_ID = ?";
             try (Connection con = DriverManager.getConnection(url, user, pass);
@@ -93,7 +93,7 @@ public class MysqlCon {
 	public static int loginUser(String username, String hashedPass) {
 	    String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
 	    String user = "root";
-	    String pass = "Quimby321#";
+	    String pass = "Horse7plum!";
 
 	    String sql = "SELECT User_ID FROM User WHERE Username = ? AND Password = ?";
 
@@ -124,7 +124,7 @@ public class MysqlCon {
 	    List<String[]> cars = new ArrayList<>();
 	    String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
 	    String user = "root";
-	    String pass = "Quimby321#";
+	    String pass = "Horse7plum!";
 
 	    try (Connection con = DriverManager.getConnection(url, user, pass);
 	         Statement stmt = con.createStatement();
@@ -185,7 +185,7 @@ public class MysqlCon {
                                    String displayName, String bio, String location) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
 
         String sql = "INSERT INTO User " +
                  "(Username, Email, Password, Display_Name, Bio, Location, Date_Created) " +
@@ -224,7 +224,7 @@ public class MysqlCon {
     public static boolean createClub(int managerID, String clubName, String description, String location) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
 
         String sql = "INSERT INTO Clubs (Manager_ID, Club_Name, Description, Location) " +
                      "VALUES (?, ?, ?, ?)";
@@ -259,7 +259,7 @@ public class MysqlCon {
     public static boolean addCar(int userID, String make, String model, int year, String description) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
 
         String sql = "INSERT INTO Cars (User_ID, Make, Model, Year, Description) " +
                      "VALUES (?, ?, ?, ?, ?)";
@@ -293,7 +293,7 @@ public class MysqlCon {
     public static boolean updateProfile(int userID, String displayName, String bio, String location) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
 
         String sql = "UPDATE User SET Display_Name = ?, Bio = ?, Location = ? WHERE User_ID = ?";
 
@@ -323,7 +323,7 @@ public class MysqlCon {
     public static String[] getUserProfile(int userID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT Username, Display_Name, Bio, Location, Date_Created " +
                      "FROM User WHERE User_ID = ?";
@@ -359,7 +359,7 @@ public class MysqlCon {
         List<String[]> clubs = new ArrayList<>();
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT c.Club_ID, c.Manager_ID, c.Club_Name, c.Description, " +
                      "c.Location, u.Username AS Manager_Username " +
@@ -390,7 +390,7 @@ public class MysqlCon {
         List<String[]> clubs = new ArrayList<>();
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
         String sql  = "SELECT c.Club_ID, c.Manager_ID, c.Club_Name, c.Description, " +
                       "c.Location, u.Username AS Manager_Username " +
                       "FROM Clubs c JOIN User u ON c.Manager_ID = u.User_ID " +
@@ -422,7 +422,7 @@ public class MysqlCon {
     public static boolean joinClub(int clubID, int userID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
         String sql  = "INSERT IGNORE INTO club_membership (Club_ID, User_ID) VALUES (?, ?)";
         try (Connection con = DriverManager.getConnection(url, user, pass);
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -438,7 +438,7 @@ public class MysqlCon {
     public static boolean leaveClub(int clubID, int userID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
         String sql  = "DELETE FROM club_membership WHERE Club_ID = ? AND User_ID = ?";
         try (Connection con = DriverManager.getConnection(url, user, pass);
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -454,7 +454,7 @@ public class MysqlCon {
     public static boolean isUserInClub(int clubID, int userID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
         String sql  = "SELECT 1 FROM club_membership WHERE Club_ID = ? AND User_ID = ?";
         try (Connection con = DriverManager.getConnection(url, user, pass);
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -471,7 +471,7 @@ public class MysqlCon {
     public static int getClubMemberCount(int clubID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
         String sql  = "SELECT COUNT(*) FROM club_membership WHERE Club_ID = ?";
         try (Connection con = DriverManager.getConnection(url, user, pass);
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -496,7 +496,7 @@ public class MysqlCon {
         List<String[]> clubs = new ArrayList<>();
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "Quimby321#";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT c.Club_ID, c.Manager_ID, c.Club_Name, c.Description, " +
                      "c.Location, u.Username AS Manager_Username " +
@@ -546,7 +546,7 @@ public class MysqlCon {
                                       String location, String eventType, String description) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "INSERT INTO Events (Club_ID, Event_Name, Event_Date, Location, Event_Type, Description) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
@@ -579,7 +579,7 @@ public class MysqlCon {
                                       String location, String eventType, String description) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "UPDATE Events SET Event_Name=?, Event_Date=?, Location=?, Event_Type=?, Description=? " +
                      "WHERE Event_ID=?";
@@ -611,7 +611,7 @@ public class MysqlCon {
     public static boolean deleteEvent(int eventID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         try (Connection con = DriverManager.getConnection(url, user, pass)) {
             con.setAutoCommit(false);
@@ -654,7 +654,7 @@ public class MysqlCon {
         List<String[]> events = new ArrayList<>();
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT e.Event_ID, e.Club_ID, c.Club_Name, e.Event_Name, " +
                      "e.Event_Date, e.Event_Type, e.Location, e.Description, c.Manager_ID " +
@@ -693,7 +693,7 @@ public class MysqlCon {
         List<String[]> events = new ArrayList<>();
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT e.Event_ID, e.Club_ID, c.Club_Name, e.Event_Name, " +
                      "e.Event_Date, e.Event_Type, e.Location, e.Description, c.Manager_ID " +
@@ -739,7 +739,7 @@ public class MysqlCon {
     public static boolean registerForEvent(int eventID, int userID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "INSERT IGNORE INTO Event_Registration (Event_ID, User_ID) VALUES (?, ?)";
 
@@ -764,7 +764,7 @@ public class MysqlCon {
     public static boolean unregisterFromEvent(int eventID, int userID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "DELETE FROM Event_Registration WHERE Event_ID = ? AND User_ID = ?";
 
@@ -787,7 +787,7 @@ public class MysqlCon {
     public static boolean isUserRegisteredForEvent(int eventID, int userID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT 1 FROM Event_Registration WHERE Event_ID = ? AND User_ID = ?";
 
@@ -810,7 +810,7 @@ public class MysqlCon {
     public static int getEventAttendeeCount(int eventID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT COUNT(*) FROM Event_Registration WHERE Event_ID = ?";
 
@@ -836,7 +836,7 @@ public class MysqlCon {
         List<String[]> clubs = new ArrayList<>();
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT Club_ID, Club_Name FROM Clubs WHERE Manager_ID = ? ORDER BY Club_Name";
 
@@ -866,7 +866,7 @@ public class MysqlCon {
     public static String[] getEventByID(int eventID) {
         String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
         String user = "root";
-        String pass = "root";
+        String pass = "Horse7plum!";
 
         String sql = "SELECT e.Event_ID, e.Club_ID, c.Club_Name, e.Event_Name, " +
                      "e.Event_Date, e.Event_Type, e.Location, e.Description, c.Manager_ID " +

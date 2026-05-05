@@ -34,6 +34,8 @@
     .btn-gold:hover { background: #f5c76a; }
     .btn-outline { background: transparent; color: #555; border: 0.5px solid #2a2a2a; }
     .btn-outline:hover { border-color: #555; color: #f0f0f0; }
+    .btn-danger { background: transparent; color: #7a2d2d; border: 0.5px solid #7a2d2d; }
+    .btn-danger:hover { background: #7a2d2d; color: #f0f0f0; }
     .member-since { font-size: 11px; color: #333; letter-spacing: 1px; text-transform: uppercase; margin-top: 16px; }
 
     /* Section */
@@ -103,11 +105,14 @@
   <a class="logo" href="index.jsp">Car Club</a>
   <div class="nav-links">
     <a href="index.jsp">Garage</a>
-    <% if (sessionUserID != null) { %>
+    <% String  _navUser = (String)  session.getAttribute("username");
+       Integer _navID   = (Integer) session.getAttribute("userID");
+       if (_navUser != null) { %>
+      <a href="AddCar.jsp">Add Car</a>
       <a href="createClub.jsp">Clubs</a>
       <a href="events.jsp">Events</a>
-      <a href="editProfile.jsp">Edit Profile</a>
-      <a href="logout.jsp">Logout</a>
+      <a href="viewProfile.jsp?id=<%= _navID %>">My Profile</a>
+<a href="logout.jsp">Logout (<%= _navUser %>)</a>
     <% } else { %>
       <a href="createClub.jsp">Clubs</a>
       <a href="events.jsp">Events</a>
@@ -177,6 +182,7 @@
           <a href="editProfile.jsp" class="btn-sm btn-gold">Edit Profile</a>
           <a href="addCar.jsp" class="btn-sm btn-outline">Add Car</a>
           <a href="createEvent.jsp" class="btn-sm btn-outline">Create Event</a>
+          <a href="deleteAccount.jsp" class="btn-sm btn-danger">Delete Account</a>
         </div>
       <% } %>
       <% if (pDate != null) { %>

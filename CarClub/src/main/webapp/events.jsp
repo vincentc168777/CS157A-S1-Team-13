@@ -142,11 +142,14 @@
   <a class="logo" href="index.jsp">Car Club</a>
   <div class="nav-links">
     <a href="index.jsp">Garage</a>
-    <% if (sessionUserID != null) { %>
-      <a href="viewProfile.jsp?id=<%= sessionUserID %>">My Profile</a>
+    <% String  _navUser = (String)  session.getAttribute("username");
+       Integer _navID   = (Integer) session.getAttribute("userID");
+       if (_navUser != null) { %>
+      <a href="AddCar.jsp">Add Car</a>
       <a href="createClub.jsp">Clubs</a>
       <a href="events.jsp">Events</a>
-      <a href="logout.jsp">Logout</a>
+      <a href="viewProfile.jsp?id=<%= _navID %>">My Profile</a>
+<a href="logout.jsp">Logout (<%= _navUser %>)</a>
     <% } else { %>
       <a href="createClub.jsp">Clubs</a>
       <a href="events.jsp">Events</a>
@@ -168,7 +171,7 @@
   <form method="GET" action="events.jsp">
     <div class="controls">
       <div class="search-wrap">
-        <input type="text" name="q" placeholder="Search events by name, type, location, or club…"
+        <input type="text" id="eventFilter" name="q" placeholder="Search events by name, type, location, or club…"
                value="<%= keyword != null ? keyword : "" %>"/>
       </div>
       <div class="filter-wrap">
@@ -195,7 +198,7 @@
 
 <!-- Events grid -->
 <div class="events-section">
-  <div class="section-label" id="eventsLabel">
+  <div class="section-label" id="eventsLabel" data-total="<%= events.size() %>">
     <%= events.isEmpty() ? "No events found" : events.size() + " event" + (events.size() == 1 ? "" : "s") %>
     <%= (keyword != null && !keyword.trim().isEmpty()) ? " matching \"" + keyword + "\"" : "" %>
   </div>
@@ -277,24 +280,26 @@
 </div>
 
 <script>
-  // Client-side live filter by keyword (supplements the server-side search)
   (function () {
-    var input = document.querySelector('input[name="q"]');
+    var input = document.getElementById('eventFilter');
     if (!input) return;
-    // Only run live filter when there's no server-side search active (page already loaded)
+    var total = parseInt(document.getElementById('eventsLabel').getAttribute('data-total'), 10);
+
     input.addEventListener('input', function () {
       var q = this.value.toLowerCase().trim();
       var cards = document.querySelectorAll('.event-card');
       var visible = 0;
+
       cards.forEach(function (card) {
-        var match = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
-        card.parentElement.style.display = match ? '' : 'none';
-        if (match) visible++;
+        var matches = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+        card.style.display = matches ? '' : 'none';
+        if (matches) visible++;
       });
-      var label = document.getElementById('eventsLabel');
-      if (label) label.textContent = q
-        ? 'Showing ' + visible + ' of ' + cards.length + ' events'
-        : cards.length + ' event' + (cards.length === 1 ? '' : 's');
+
+      document.getElementById('eventsLabel').textContent = q
+        ? 'Showing ' + visible + ' of ' + total + ' events'
+        : total + ' event' + (total === 1 ? '' : 's');
+
       var noRes = document.getElementById('noResults');
       if (noRes) noRes.style.display = (q && visible === 0) ? 'block' : 'none';
     });

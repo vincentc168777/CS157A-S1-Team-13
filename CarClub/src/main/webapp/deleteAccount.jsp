@@ -35,12 +35,19 @@
 <head>
   <meta charset="UTF-8" />
   <title>Delete Account - Car Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
   <style>
     body {
       background: #0a0a0a;
       color: #fff;
       font-family: 'DM Sans', sans-serif;
     }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; border-bottom: 0.5px solid #2a2a2a; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; color: #e8b44b; text-decoration: none; }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a { color: #888; font-size: 12px; text-decoration: none; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: #e8b44b; }
     .container {
       max-width: 420px;
       margin: 60px auto;
@@ -104,6 +111,28 @@
 </head>
 
 <body>
+
+<nav>
+  <a class="logo" href="index.jsp">Car Club</a>
+  <div class="nav-links">
+    <a href="index.jsp">Garage</a>
+    <% String  _navUser = (String)  session.getAttribute("username");
+       Integer _navID   = (Integer) session.getAttribute("userID");
+       if (_navUser != null) { %>
+      <a href="AddCar.jsp">Add Car</a>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
+      <a href="viewProfile.jsp?id=<%= _navID %>">My Profile</a>
+<a href="logout.jsp">Logout (<%= _navUser %>)</a>
+    <% } else { %>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
+      <a href="login.jsp">Login</a>
+      <a href="register.jsp">Register</a>
+    <% } %>
+  </div>
+</nav>
+
   <div class="container">
     <h2>Delete Account</h2>
 
