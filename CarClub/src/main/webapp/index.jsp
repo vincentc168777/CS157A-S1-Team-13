@@ -247,10 +247,13 @@
     %>
       <a href="AddCar.jsp">Add Car</a>
       <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
       <a href="viewProfile.jsp?id=<%= loggedInID %>">My Profile</a>
       <a href="deleteAccount.jsp" style="color:#a00;">Delete Account</a>
       <a href="logout.jsp">Logout (<%= loggedInUser %>)</a>
     <% } else { %>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
       <a href="login.jsp">Login</a>
       <a href="register.jsp">Register</a>
     <% } %>
@@ -280,8 +283,10 @@
   %>
     <a href="AddCar.jsp" class="btn-outline">+ Add a Car</a>
     <a href="createClub.jsp" class="btn-outline">Browse Clubs</a>
+    <a href="events.jsp" class="btn-outline">Events</a>
   <% } else { %>
     <a href="register.jsp" class="btn-outline">Join Now</a>
+    <a href="events.jsp" class="btn-outline">Browse Events</a>
   <% } %>
 	</div>
   </div>
