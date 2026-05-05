@@ -34,6 +34,8 @@
     .btn-gold:hover { background: #f5c76a; }
     .btn-outline { background: transparent; color: #555; border: 0.5px solid #2a2a2a; }
     .btn-outline:hover { border-color: #555; color: #f0f0f0; }
+    .btn-danger { background: transparent; color: #7a2d2d; border: 0.5px solid #7a2d2d; }
+    .btn-danger:hover { background: #7a2d2d; color: #f0f0f0; }
     .member-since { font-size: 11px; color: #333; letter-spacing: 1px; text-transform: uppercase; margin-top: 16px; }
 
     /* Section */
@@ -47,6 +49,26 @@
     .car-name { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 8px; }
     .car-desc { font-size: 13px; color: #666; line-height: 1.5; }
     .empty-state { padding: 40px; text-align: center; background: #0e0e0e; border: 0.5px solid #1a1a1a; color: #444; font-size: 13px; letter-spacing: 0.5px; }
+
+    /* Club grid */
+    .club-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: #1a1a1a; }
+    .club-card { background: #0e0e0e; padding: 24px; }
+    .club-badge { font-size: 10px; letter-spacing: 2px; color: #e8b44b; text-transform: uppercase; margin-bottom: 8px; }
+    .club-card-name { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 6px; }
+    .club-card-desc { font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 10px; }
+    .club-card-meta { display: flex; gap: 12px; font-size: 11px; color: #444; letter-spacing: 0.5px; text-transform: uppercase; flex-wrap: wrap; }
+
+    /* Event grid */
+    .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: #1a1a1a; }
+    .event-card { background: #0e0e0e; padding: 24px; display: flex; flex-direction: column; gap: 6px; }
+    .event-type-label { font-size: 10px; letter-spacing: 2px; color: #e8b44b; text-transform: uppercase; margin-bottom: 4px; }
+    .event-card-name { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; line-height: 1.1; margin-bottom: 6px; }
+    .event-card-meta { font-size: 12px; color: #555; line-height: 1.8; }
+    .event-card-meta span { display: block; }
+    .event-badge { font-size: 10px; letter-spacing: 2px; color: #e8b44b; text-transform: uppercase; margin-bottom: 8px; }
+    .event-card-actions { margin-top: 12px; }
+    .btn-edit-sm { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #e8b44b; border: 0.5px solid #e8b44b; padding: 5px 14px; text-decoration: none; display: inline-block; transition: background 0.2s, color 0.2s; }
+    .btn-edit-sm:hover { background: #e8b44b; color: #0a0a0a; }
 
     /* Not found */
     .not-found { text-align: center; padding: 120px 32px; }
@@ -83,10 +105,17 @@
   <a class="logo" href="index.jsp">Car Club</a>
   <div class="nav-links">
     <a href="index.jsp">Garage</a>
-    <% if (sessionUserID != null) { %>
-      <a href="editProfile.jsp">Edit Profile</a>
-      <a href="logout.jsp">Logout</a>
+    <% String  _navUser = (String)  session.getAttribute("username");
+       Integer _navID   = (Integer) session.getAttribute("userID");
+       if (_navUser != null) { %>
+      <a href="AddCar.jsp">Add Car</a>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
+      <a href="viewProfile.jsp?id=<%= _navID %>">My Profile</a>
+<a href="logout.jsp">Logout (<%= _navUser %>)</a>
     <% } else { %>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
       <a href="login.jsp">Login</a>
       <a href="register.jsp">Register</a>
     <% } %>
@@ -115,6 +144,21 @@
       userCars.add(car);
     }
   }
+
+  // Load this user's clubs
+  List<String[]> userClubs = MysqlCon.getUserClubs(targetID);
+
+  // Load events this user manages (created via their clubs)
+  List<String[]> allEvents = MysqlCon.getEvents();
+  java.util.List<String[]> managedEvents = new java.util.ArrayList<>();
+  java.util.List<String[]> registeredEvents = new java.util.ArrayList<>();
+  for (String[] ev : allEvents) {
+    if (ev[8] != null && ev[8].equals(String.valueOf(targetID))) {
+      managedEvents.add(ev);
+    } else if (MysqlCon.isUserRegisteredForEvent(Integer.parseInt(ev[0]), targetID)) {
+      registeredEvents.add(ev);
+    }
+  }
 %>
 
 <div class="profile-wrapper">
@@ -137,6 +181,8 @@
         <div class="profile-actions">
           <a href="editProfile.jsp" class="btn-sm btn-gold">Edit Profile</a>
           <a href="addCar.jsp" class="btn-sm btn-outline">Add Car</a>
+          <a href="createEvent.jsp" class="btn-sm btn-outline">Create Event</a>
+          <a href="deleteAccount.jsp" class="btn-sm btn-danger">Delete Account</a>
         </div>
       <% } %>
       <% if (pDate != null) { %>
@@ -162,6 +208,103 @@
             <div class="car-year"><%= car[4] %></div>
             <div class="car-name"><%= car[2] %> <%= car[3] %></div>
             <div class="car-desc"><%= desc %></div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Clubs section -->
+  <div class="section">
+    <div class="section-title">Clubs (<%= userClubs.size() %>)</div>
+    <% if (userClubs.isEmpty()) { %>
+      <div class="empty-state">
+        <%= isOwnProfile ? "You haven't joined any clubs. <a href='createClub.jsp' style='color:#e8b44b;text-decoration:none;'>Browse clubs →</a>" : "Not a member of any clubs yet." %>
+      </div>
+    <% } else { %>
+      <div class="club-grid">
+        <% for (String[] uc : userClubs) {
+          boolean ucIsOwner = uc[1] != null && uc[1].equals(String.valueOf(targetID));
+          String  ucDesc    = (uc[3] != null && !uc[3].isEmpty()) ? uc[3] : "No description.";
+          String  ucLoc     = (uc[4] != null && !uc[4].isEmpty()) ? uc[4] : null;
+          int     ucCount   = MysqlCon.getClubMemberCount(Integer.parseInt(uc[0]));
+        %>
+          <div class="club-card">
+            <% if (ucIsOwner) { %><div class="club-badge">Owner</div><% } %>
+            <div class="club-card-name"><%= uc[2] %></div>
+            <div class="club-card-desc"><%= ucDesc %></div>
+            <div class="club-card-meta">
+              <% if (ucLoc != null) { %><span>📍 <%= ucLoc %></span><% } %>
+              <span><%= ucCount %> member<%= ucCount != 1 ? "s" : "" %></span>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- My Events section (events the user manages) -->
+  <div class="section">
+    <div class="section-title">My Events (<%= managedEvents.size() %>)</div>
+    <% if (managedEvents.isEmpty()) { %>
+      <div class="empty-state">
+        <%= isOwnProfile
+            ? "You haven't created any events. <a href='createEvent.jsp' style='color:#e8b44b;text-decoration:none;'>Create one →</a>"
+            : "No events hosted yet." %>
+      </div>
+    <% } else { %>
+      <div class="event-grid">
+        <% for (String[] ev : managedEvents) {
+          // ev: [0]=Event_ID, [1]=Club_ID, [2]=Club_Name, [3]=Event_Name,
+          //     [4]=Event_Date, [5]=Event_Type, [6]=Location, [7]=Description, [8]=Manager_ID
+          String evDate     = ev[4] != null ? ev[4].substring(0, 10) : "TBD";
+          String evLoc      = ev[6] != null ? ev[6] : "";
+          int    attendees  = MysqlCon.getEventAttendeeCount(Integer.parseInt(ev[0]));
+        %>
+          <div class="event-card">
+            <div class="event-badge">Host</div>
+            <div class="event-type-label"><%= ev[5] %></div>
+            <div class="event-card-name"><%= ev[3] %></div>
+            <div class="event-card-meta">
+              <span>📅 <%= evDate %></span>
+              <span>📍 <%= evLoc %></span>
+              <span style="color:#e8b44b;"><%= ev[2] %></span>
+              <span><%= attendees %> going</span>
+            </div>
+            <% if (isOwnProfile) { %>
+              <div class="event-card-actions">
+                <a href="createEvent.jsp?edit=<%= ev[0] %>" class="btn-edit-sm">Edit Event</a>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Registered Events section (events the user signed up for) -->
+  <div class="section">
+    <div class="section-title">Registered Events (<%= registeredEvents.size() %>)</div>
+    <% if (registeredEvents.isEmpty()) { %>
+      <div class="empty-state">
+        <%= isOwnProfile
+            ? "You haven't registered for any events. <a href='events.jsp' style='color:#e8b44b;text-decoration:none;'>Browse events →</a>"
+            : "Not registered for any events yet." %>
+      </div>
+    <% } else { %>
+      <div class="event-grid">
+        <% for (String[] ev : registeredEvents) {
+          String evDate = ev[4] != null ? ev[4].substring(0, 10) : "TBD";
+          String evLoc  = ev[6] != null ? ev[6] : "";
+        %>
+          <div class="event-card">
+            <div class="event-type-label"><%= ev[5] %></div>
+            <div class="event-card-name"><%= ev[3] %></div>
+            <div class="event-card-meta">
+              <span>📅 <%= evDate %></span>
+              <span>📍 <%= evLoc %></span>
+              <span style="color:#e8b44b;"><%= ev[2] %></span>
+            </div>
           </div>
         <% } %>
       </div>

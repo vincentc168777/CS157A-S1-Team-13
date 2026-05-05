@@ -52,7 +52,20 @@
   <a class="logo" href="index.jsp">Car Club</a>
   <div class="nav-links">
     <a href="index.jsp">Garage</a>
-    <a href="register.jsp">Register</a>
+    <% String  _navUser = (String)  session.getAttribute("username");
+       Integer _navID   = (Integer) session.getAttribute("userID");
+       if (_navUser != null) { %>
+      <a href="AddCar.jsp">Add Car</a>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
+      <a href="viewProfile.jsp?id=<%= _navID %>">My Profile</a>
+<a href="logout.jsp">Logout (<%= _navUser %>)</a>
+    <% } else { %>
+      <a href="createClub.jsp">Clubs</a>
+      <a href="events.jsp">Events</a>
+      <a href="login.jsp">Login</a>
+      <a href="register.jsp">Register</a>
+    <% } %>
   </div>
 </nav>
 
