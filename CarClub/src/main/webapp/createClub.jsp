@@ -49,11 +49,12 @@
     .btn-primary:hover { background: #f5c76a; }
     .btn-ghost { background: transparent; color: #555; border: 0.5px solid #2a2a2a; padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; text-decoration: none; display: inline-block; transition: border-color 0.2s, color 0.2s; }
     .btn-ghost:hover { border-color: #555; color: #f0f0f0; }
+    .btn-danger { background: #7a2d2d; color: #f0f0f0; border: none; padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .btn-danger:hover { background: #a03535; }
     .alert { padding: 14px 18px; font-size: 13px; margin-bottom: 28px; border-left: 3px solid; letter-spacing: 0.3px; }
     .alert-success { background: #0b1c12; border-color: #2d7a48; color: #5ecf8a; }
     .alert-error   { background: #1c0b0b; border-color: #7a2d2d; color: #cf5e5e; }
 
-    /* Clubs listing below the fold */
     .clubs-section { max-width: 900px; margin: 0 auto; padding: 0 32px 80px; }
     .clubs-header { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #555; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 0.5px solid #1a1a1a; }
     .clubs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: #1a1a1a; }
@@ -64,12 +65,14 @@
     .club-owner { color: #e8b44b; }
     .empty-state { padding: 40px; text-align: center; background: #0e0e0e; border: 0.5px solid #1a1a1a; color: #444; font-size: 13px; }
 
-    .club-actions { margin-top: 16px; }
+    .club-actions { margin-top: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .badge-owner { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #e8b44b; border: 0.5px solid #e8b44b; padding: 5px 12px; display: inline-block; }
     .btn-join { background: #e8b44b; color: #0a0a0a; border: none; padding: 7px 18px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
     .btn-join:hover { background: #f5c76a; }
     .btn-leave { background: transparent; color: #888; border: 0.5px solid #333; padding: 7px 18px; font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
     .btn-leave:hover { border-color: #666; color: #f0f0f0; }
+    .btn-edit { background: transparent; color: #e8b44b; border: 0.5px solid #e8b44b; padding: 7px 18px; font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; display: inline-block; transition: background 0.2s; }
+    .btn-edit:hover { background: #1a1500; }
 
     .club-search { margin-bottom: 24px; }
     .club-search input { width: 100%; background: #131313; border: 0.5px solid #2a2a2a; color: #f0f0f0; padding: 10px 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
@@ -96,6 +99,24 @@
     return;
   }
 
+  // ── Edit mode: ?edit=<clubID> pre-fills the form ──────────────────────────
+  String   editIDStr = request.getParameter("edit");
+  boolean  editMode  = false;
+  String[] editClub  = null;
+
+  if (editIDStr != null && !editIDStr.trim().isEmpty()) {
+    try {
+      int eid = Integer.parseInt(editIDStr.trim());
+      editClub = MysqlCon.getClubByID(eid);
+      if (editClub != null && editClub[1] != null &&
+          editClub[1].equals(String.valueOf(sessionUserID))) {
+        editMode = true;
+      } else {
+        editClub = null;
+      }
+    } catch (NumberFormatException ignored) {}
+  }
+
   String successMsg  = null;
   String errorMsg    = null;
   String actionMsg   = null;
@@ -103,63 +124,121 @@
 
   // ── Handle POST ────────────────────────────────────────────────────────────
   if ("POST".equalsIgnoreCase(request.getMethod())) {
-    String joinClubIDStr  = request.getParameter("joinClubID");
-    String leaveClubIDStr = request.getParameter("leaveClubID");
+    String action    = request.getParameter("action");
+    String clubIDStr = request.getParameter("clubID");
 
-    if (joinClubIDStr != null) {
+    // ── Delete ──────────────────────────────────────────────────────────────
+    if ("delete".equals(action) && clubIDStr != null) {
       try {
-        int joinID = Integer.parseInt(joinClubIDStr);
-        if (MysqlCon.isUserInClub(joinID, sessionUserID)) {
-          actionError = "You are already a member of this club.";
-        } else {
-          boolean ok = MysqlCon.joinClub(joinID, sessionUserID);
+        int delID = Integer.parseInt(clubIDStr);
+        String[] cl = MysqlCon.getClubByID(delID);
+        if (cl != null && cl[1] != null && cl[1].equals(String.valueOf(sessionUserID))) {
+          boolean ok = MysqlCon.deleteClub(delID);
           if (ok) {
-            actionMsg = "You joined the club!";
+            response.sendRedirect("createClub.jsp");
+            return;
           } else {
-            actionError = "Could not join club. Check server logs for details.";
+            errorMsg = "Could not delete club.";
           }
-        }
-      } catch (NumberFormatException e) {
-        actionError = "Invalid club ID.";
-      }
-    } else if (leaveClubIDStr != null) {
-      try {
-        int leaveID = Integer.parseInt(leaveClubIDStr);
-        boolean ok = MysqlCon.leaveClub(leaveID, sessionUserID);
-        if (ok) {
-          actionMsg = "You left the club.";
         } else {
-          actionError = "Could not leave club.";
+          errorMsg = "You do not have permission to delete this club.";
         }
       } catch (NumberFormatException e) {
-        actionError = "Invalid club ID.";
+        errorMsg = "Invalid club ID.";
       }
-    } else {
-      String clubName    = request.getParameter("clubName");
-      String description = request.getParameter("description");
-      String location    = request.getParameter("location");
 
+    // ── Update ──────────────────────────────────────────────────────────────
+    } else if ("update".equals(action) && clubIDStr != null) {
+      String clubName   = request.getParameter("clubName");
+      String description = request.getParameter("description");
+      String location   = request.getParameter("location");
       clubName    = (clubName    != null) ? clubName.trim()    : "";
       description = (description != null) ? description.trim() : "";
       location    = (location    != null) ? location.trim()    : "";
-
-      if (clubName.isEmpty()) {
-        errorMsg = "Club name is required.";
-      } else if (description.isEmpty()) {
-        errorMsg = "Description is required.";
-      } else if (clubName.length() > 100) {
-        errorMsg = "Club name must be 100 characters or fewer.";
-      } else if (description.length() > 500) {
-        errorMsg = "Description must be 500 characters or fewer.";
-      } else if (location.length() > 100) {
-        errorMsg = "Location must be 100 characters or fewer.";
-      } else {
-        boolean ok = MysqlCon.createClub(sessionUserID, clubName, description, location);
-        if (ok) {
-          successMsg = "\"" + clubName + "\" has been created. You are the club owner.";
+      try {
+        int updID = Integer.parseInt(clubIDStr);
+        String[] cl = MysqlCon.getClubByID(updID);
+        if (cl == null || !cl[1].equals(String.valueOf(sessionUserID))) {
+          errorMsg = "You do not have permission to edit this club.";
+        } else if (clubName.isEmpty()) {
+          errorMsg = "Club name is required.";
+          editMode = true; editClub = cl;
+        } else if (description.isEmpty()) {
+          errorMsg = "Description is required.";
+          editMode = true; editClub = cl;
         } else {
-          // Most likely a UNIQUE constraint violation on Club_Name
-          errorMsg = "Club creation failed. That club name may already be taken.";
+          boolean ok = MysqlCon.updateClub(updID, clubName, description, location);
+          if (ok) {
+            successMsg = "\"" + clubName + "\" updated successfully.";
+            editMode = false; editClub = null;
+          } else {
+            errorMsg = "Update failed. That club name may already be taken.";
+            editMode = true; editClub = cl;
+          }
+        }
+      } catch (NumberFormatException e) {
+        errorMsg = "Invalid club ID.";
+      }
+
+    // ── Join / Leave / Create ────────────────────────────────────────────────
+    } else {
+      String joinClubIDStr  = request.getParameter("joinClubID");
+      String leaveClubIDStr = request.getParameter("leaveClubID");
+
+      if (joinClubIDStr != null) {
+        try {
+          int joinID = Integer.parseInt(joinClubIDStr);
+          if (MysqlCon.isUserInClub(joinID, sessionUserID)) {
+            actionError = "You are already a member of this club.";
+          } else {
+            boolean ok = MysqlCon.joinClub(joinID, sessionUserID);
+            if (ok) {
+              actionMsg = "You joined the club!";
+            } else {
+              actionError = "Could not join club. Check server logs for details.";
+            }
+          }
+        } catch (NumberFormatException e) {
+          actionError = "Invalid club ID.";
+        }
+      } else if (leaveClubIDStr != null) {
+        try {
+          int leaveID = Integer.parseInt(leaveClubIDStr);
+          boolean ok = MysqlCon.leaveClub(leaveID, sessionUserID);
+          if (ok) {
+            actionMsg = "You left the club.";
+          } else {
+            actionError = "Could not leave club.";
+          }
+        } catch (NumberFormatException e) {
+          actionError = "Invalid club ID.";
+        }
+      } else {
+        String clubName   = request.getParameter("clubName");
+        String description = request.getParameter("description");
+        String location   = request.getParameter("location");
+
+        clubName    = (clubName    != null) ? clubName.trim()    : "";
+        description = (description != null) ? description.trim() : "";
+        location    = (location    != null) ? location.trim()    : "";
+
+        if (clubName.isEmpty()) {
+          errorMsg = "Club name is required.";
+        } else if (description.isEmpty()) {
+          errorMsg = "Description is required.";
+        } else if (clubName.length() > 100) {
+          errorMsg = "Club name must be 100 characters or fewer.";
+        } else if (description.length() > 500) {
+          errorMsg = "Description must be 500 characters or fewer.";
+        } else if (location.length() > 100) {
+          errorMsg = "Location must be 100 characters or fewer.";
+        } else {
+          boolean ok = MysqlCon.createClub(sessionUserID, clubName, description, location);
+          if (ok) {
+            successMsg = "\"" + clubName + "\" has been created. You are the club owner.";
+          } else {
+            errorMsg = "Club creation failed. That club name may already be taken.";
+          }
         }
       }
     }
@@ -191,14 +270,19 @@
   </div>
 </nav>
 
-<!-- Create Club Form -->
+<!-- Create / Edit Club Form -->
 <div class="page-layout">
 
   <!-- LEFT – branding -->
   <div class="left-panel">
-    <div class="left-tag">Community</div>
-    <h1 class="left-title">Start a<br><span>Club</span></h1>
-    <p class="left-sub">Create a club to bring local enthusiasts together, organise meets, and build a community around your passion.</p>
+    <div class="left-tag"><%= editMode ? "Management" : "Community" %></div>
+    <h1 class="left-title"><%= editMode ? "Edit<br><span>Club</span>" : "Start a<br><span>Club</span>" %></h1>
+    <p class="left-sub">
+      <%= editMode
+          ? "Update the details below. Changes are reflected immediately on the public clubs directory."
+          : "Create a club to bring local enthusiasts together, organise meets, and build a community around your passion." %>
+    </p>
+    <% if (!editMode) { %>
     <div class="perks">
       <div class="perk">
         <div class="perk-dot"></div>
@@ -213,6 +297,7 @@
         <div class="perk-text"><strong>Unique Name Required</strong> – club names must be distinct across the platform.</div>
       </div>
     </div>
+    <% } %>
   </div>
 
   <!-- RIGHT – form -->
@@ -225,9 +310,14 @@
       <div class="alert alert-error"><%= errorMsg %></div>
     <% } %>
 
-    <div class="form-heading">Club details</div>
+    <div class="form-heading"><%= editMode ? "Edit club details" : "Club details" %></div>
 
-    <form method="POST" action="createClub.jsp" novalidate>
+    <form id="club-form" method="POST" action="createClub.jsp" novalidate>
+
+      <% if (editMode) { %>
+        <input type="hidden" name="action" value="update"/>
+        <input type="hidden" name="clubID" value="<%= editClub[0] %>"/>
+      <% } %>
 
       <div class="form-group">
         <label for="clubName">Club Name <span class="required-mark">*</span></label>
@@ -237,6 +327,7 @@
           name="clubName"
           placeholder="e.g. Bay Area JDM Collective"
           maxlength="100"
+          value="<%= editMode ? editClub[2] : "" %>"
           required
         />
         <div class="hint">Unique · max 100 characters</div>
@@ -252,8 +343,8 @@
           placeholder="What's the club about? What kind of cars or events does it focus on?"
           oninput="updateCharCount(this, 'descCount', 500)"
           required
-        ></textarea>
-        <div class="char-count"><span id="descCount">0</span> / 500</div>
+        ><%= editMode && editClub[3] != null ? editClub[3] : "" %></textarea>
+        <div class="char-count"><span id="descCount"><%= editMode && editClub[3] != null ? editClub[3].length() : 0 %></span> / 500</div>
       </div>
 
       <div class="section-divider">Optional</div>
@@ -266,16 +357,27 @@
           name="location"
           placeholder="City, State"
           maxlength="100"
+          value="<%= editMode && editClub[4] != null ? editClub[4] : "" %>"
         />
         <div class="hint">Helps nearby members discover your club</div>
       </div>
 
-      <div class="form-actions">
-        <button type="submit" class="btn-primary">Create Club</button>
-        <a href="index.jsp" class="btn-ghost">Cancel</a>
-      </div>
-
     </form>
+
+    <div class="form-actions">
+      <button type="submit" form="club-form" class="btn-primary"><%= editMode ? "Save Changes" : "Create Club" %></button>
+      <a href="createClub.jsp" class="btn-ghost">Cancel</a>
+
+      <% if (editMode) { %>
+        <form method="POST" action="createClub.jsp" style="display:inline;"
+              onsubmit="return confirm('Delete this club? This will permanently remove all its events, members, and sponsors. This cannot be undone.');">
+          <input type="hidden" name="action" value="delete"/>
+          <input type="hidden" name="clubID" value="<%= editClub[0] %>"/>
+          <button type="submit" class="btn-danger">Delete Club</button>
+        </form>
+      <% } %>
+    </div>
+
   </div>
 </div>
 
@@ -290,13 +392,13 @@
   <% } else { %>
     <div class="clubs-grid">
       <% for (String[] mc : myClubs) {
-        int    mcID    = Integer.parseInt(mc[0]);
-        String mcName  = mc[2];
-        String mcDesc  = mc[3] != null ? mc[3] : "";
-        String mcLoc   = (mc[4] != null && !mc[4].isEmpty()) ? mc[4] : null;
-        String mcOwner = mc[5];
+        int    mcID      = Integer.parseInt(mc[0]);
+        String mcName    = mc[2];
+        String mcDesc    = mc[3] != null ? mc[3] : "";
+        String mcLoc     = (mc[4] != null && !mc[4].isEmpty()) ? mc[4] : null;
+        String mcOwner   = mc[5];
         boolean mcIsOwner = mc[1] != null && mc[1].equals(String.valueOf(sessionUserID));
-        int    mcCount = MysqlCon.getClubMemberCount(mcID);
+        int    mcCount   = MysqlCon.getClubMemberCount(mcID);
       %>
         <div class="club-card">
           <div class="club-name"><%= mcName %></div>
@@ -309,6 +411,7 @@
           <div class="club-actions">
             <% if (mcIsOwner) { %>
               <span class="badge-owner">Owner</span>
+              <a href="createClub.jsp?edit=<%= mcID %>" class="btn-edit">Edit Club</a>
             <% } else { %>
               <form method="POST" action="createClub.jsp" style="display:inline;">
                 <input type="hidden" name="leaveClubID" value="<%= mcID %>"/>
@@ -342,14 +445,13 @@
   <% } else { %>
     <div class="clubs-grid">
       <% for (String[] club : clubs) {
-        // club: [0]=Club_ID, [1]=Manager_ID, [2]=Club_Name, [3]=Description, [4]=Location, [5]=Manager_Username
-        int    clubIDInt   = Integer.parseInt(club[0]);
-        String cName       = club[2];
-        String cDesc       = club[3] != null ? club[3] : "";
-        String cLoc        = (club[4] != null && !club[4].isEmpty()) ? club[4] : null;
-        String cOwner      = club[5];
-        boolean isOwner    = club[1] != null && club[1].equals(String.valueOf(sessionUserID));
-        boolean isMember   = !isOwner && MysqlCon.isUserInClub(clubIDInt, sessionUserID);
+        int    clubIDInt    = Integer.parseInt(club[0]);
+        String cName        = club[2];
+        String cDesc        = club[3] != null ? club[3] : "";
+        String cLoc         = (club[4] != null && !club[4].isEmpty()) ? club[4] : null;
+        String cOwner       = club[5];
+        boolean isOwner     = club[1] != null && club[1].equals(String.valueOf(sessionUserID));
+        boolean isMember    = !isOwner && MysqlCon.isUserInClub(clubIDInt, sessionUserID);
         int     memberCount = MysqlCon.getClubMemberCount(clubIDInt);
       %>
         <div class="club-card">
@@ -363,6 +465,7 @@
           <div class="club-actions">
             <% if (isOwner) { %>
               <span class="badge-owner">Owner</span>
+              <a href="createClub.jsp?edit=<%= clubIDInt %>" class="btn-edit">Edit Club</a>
             <% } else if (isMember) { %>
               <form method="POST" action="createClub.jsp" style="display:inline;">
                 <input type="hidden" name="leaveClubID" value="<%= clubIDInt %>"/>

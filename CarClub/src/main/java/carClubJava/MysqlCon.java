@@ -1,4 +1,4 @@
-﻿package carClubJava;
+package carClubJava;
 
 import java.sql.*;
 
@@ -274,7 +274,95 @@ public class MysqlCon {
             return false;
         }
     }
-    
+
+    public static String[] getClubByID(int clubID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "SELECT Club_ID, Manager_ID, Club_Name, Description, Location FROM Clubs WHERE Club_ID = ?";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clubID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new String[]{
+                        String.valueOf(rs.getInt("Club_ID")),
+                        String.valueOf(rs.getInt("Manager_ID")),
+                        rs.getString("Club_Name"),
+                        rs.getString("Description"),
+                        rs.getString("Location")
+                    };
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static boolean updateClub(int clubID, String clubName, String description, String location) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "UPDATE Clubs SET Club_Name=?, Description=?, Location=? WHERE Club_ID=?";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, clubName);
+            ps.setString(2, description);
+            ps.setString(3, location.isEmpty() ? null : location);
+            ps.setInt(4, clubID);
+            return ps.executeUpdate() == 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean deleteClub(int clubID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        try (Connection con = DriverManager.getConnection(url, user, pass)) {
+            con.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM EventPhotos WHERE Event_ID IN (SELECT Event_ID FROM Events WHERE Club_ID = ?)")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM Event_Registration WHERE Event_ID IN (SELECT Event_ID FROM Events WHERE Club_ID = ?)")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM Sponsors WHERE Event_ID IN (SELECT Event_ID FROM Events WHERE Club_ID = ?)")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement("DELETE FROM Events WHERE Club_ID = ?")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement("DELETE FROM club_membership WHERE Club_ID = ?")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                int rows;
+                try (PreparedStatement ps = con.prepareStatement("DELETE FROM Clubs WHERE Club_ID = ?")) {
+                    ps.setInt(1, clubID);
+                    rows = ps.executeUpdate();
+                }
+                con.commit();
+                return rows == 1;
+            } catch (Exception e) {
+                con.rollback();
+                e.printStackTrace();
+                return false;
+            } finally {
+                con.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Inserts a new car into the Cars table.
      *
