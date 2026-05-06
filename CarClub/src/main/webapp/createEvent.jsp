@@ -125,7 +125,8 @@
         if (ev != null && ev[8] != null && ev[8].equals(String.valueOf(sessionUserID))) {
           boolean ok = MysqlCon.deleteEvent(delID);
           if (ok) {
-            successMsg = "Event deleted successfully.";
+            response.sendRedirect("events.jsp");
+            return;
           } else {
             errorMsg = "Could not delete event.";
           }
@@ -268,7 +269,7 @@
 
       <div class="form-heading"><%= editMode ? "Edit event details" : "Event details" %></div>
 
-      <form method="POST" action="createEvent.jsp" novalidate>
+      <form id="event-form" method="POST" action="createEvent.jsp" novalidate>
 
         <% if (editMode) { %>
           <input type="hidden" name="action"  value="update"/>
@@ -334,22 +335,22 @@
           <div class="char-count"><span id="descCount"><%= editMode && editEvent[7] != null ? editEvent[7].length() : 0 %></span> / 500</div>
         </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn-primary"><%= editMode ? "Save Changes" : "Create Event" %></button>
-          <a href="events.jsp" class="btn-ghost">Cancel</a>
-
-          <!-- Delete button (edit mode only) -->
-          <% if (editMode) { %>
-            <form method="POST" action="createEvent.jsp" style="display:inline;"
-                  onsubmit="return confirm('Delete this event? This cannot be undone.');">
-              <input type="hidden" name="action"  value="delete"/>
-              <input type="hidden" name="eventID" value="<%= editEvent[0] %>"/>
-              <button type="submit" class="btn-danger">Delete Event</button>
-            </form>
-          <% } %>
-        </div>
-
       </form>
+
+      <div class="form-actions">
+        <button type="submit" form="event-form" class="btn-primary"><%= editMode ? "Save Changes" : "Create Event" %></button>
+        <a href="events.jsp" class="btn-ghost">Cancel</a>
+
+        <!-- Delete button (edit mode only) -->
+        <% if (editMode) { %>
+          <form method="POST" action="createEvent.jsp" style="display:inline;"
+                onsubmit="return confirm('Delete this event? This cannot be undone.');">
+            <input type="hidden" name="action"  value="delete"/>
+            <input type="hidden" name="eventID" value="<%= editEvent[0] %>"/>
+            <button type="submit" class="btn-danger">Delete Event</button>
+          </form>
+        <% } %>
+      </div>
     <% } %>
   </div>
 </div>
