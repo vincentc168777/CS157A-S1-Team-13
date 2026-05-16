@@ -146,6 +146,7 @@
        Integer _navID   = (Integer) session.getAttribute("userID");
        if (_navUser != null) { %>
       <a href="AddCar.jsp">Add Car</a>
+      <a href="uploadCarPhoto.jsp">Car Photos</a>
       <a href="createClub.jsp">Clubs</a>
       <a href="events.jsp">Events</a>
       <a href="viewProfile.jsp?id=<%= _navID %>">My Profile</a>
@@ -185,6 +186,8 @@
       <button type="submit" style="display:none;"></button>
       <% if (isClubManager) { %>
         <a href="createEvent.jsp" class="btn-create">+ Create Event</a>
+        <a href="uploadEventPhoto.jsp" class="btn-create" style="background:#555;">📸 Event Photos</a>
+        <a href="manageSponsors.jsp" class="btn-create" style="background:#555;">🏆 Sponsors</a>
       <% } %>
     </div>
   </form>

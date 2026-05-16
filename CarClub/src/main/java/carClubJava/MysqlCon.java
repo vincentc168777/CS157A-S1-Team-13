@@ -274,7 +274,95 @@ public class MysqlCon {
             return false;
         }
     }
-    
+
+    public static String[] getClubByID(int clubID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "SELECT Club_ID, Manager_ID, Club_Name, Description, Location FROM Clubs WHERE Club_ID = ?";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clubID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new String[]{
+                        String.valueOf(rs.getInt("Club_ID")),
+                        String.valueOf(rs.getInt("Manager_ID")),
+                        rs.getString("Club_Name"),
+                        rs.getString("Description"),
+                        rs.getString("Location")
+                    };
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static boolean updateClub(int clubID, String clubName, String description, String location) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        String sql  = "UPDATE Clubs SET Club_Name=?, Description=?, Location=? WHERE Club_ID=?";
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, clubName);
+            ps.setString(2, description);
+            ps.setString(3, location.isEmpty() ? null : location);
+            ps.setInt(4, clubID);
+            return ps.executeUpdate() == 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean deleteClub(int clubID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+        try (Connection con = DriverManager.getConnection(url, user, pass)) {
+            con.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM EventPhotos WHERE Event_ID IN (SELECT Event_ID FROM Events WHERE Club_ID = ?)")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM Event_Registration WHERE Event_ID IN (SELECT Event_ID FROM Events WHERE Club_ID = ?)")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM Sponsors WHERE Event_ID IN (SELECT Event_ID FROM Events WHERE Club_ID = ?)")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement("DELETE FROM Events WHERE Club_ID = ?")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement("DELETE FROM club_membership WHERE Club_ID = ?")) {
+                    ps.setInt(1, clubID); ps.executeUpdate();
+                }
+                int rows;
+                try (PreparedStatement ps = con.prepareStatement("DELETE FROM Clubs WHERE Club_ID = ?")) {
+                    ps.setInt(1, clubID);
+                    rows = ps.executeUpdate();
+                }
+                con.commit();
+                return rows == 1;
+            } catch (Exception e) {
+                con.rollback();
+                e.printStackTrace();
+                return false;
+            } finally {
+                con.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Inserts a new car into the Cars table.
      *
@@ -925,5 +1013,386 @@ public class MysqlCon {
             e.printStackTrace();
         }
         return null;
+    }
+    
+ // ═══════════════════════════════════════════════════════════════
+    //  CAR PHOTOS
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Adds a photo URL to a car the logged-in user owns.
+     *
+     * @param carID    The Car_ID to attach the photo to.
+     * @param userID   The User_ID of the requester (ownership check).
+     * @param photoURL The URL string to store.
+     * @return true if inserted, false if ownership check failed or DB error.
+     */
+    public static boolean addCarPhoto(int carID, int userID, String photoURL) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        // Ownership check: only the car's owner may add photos
+        String checkSQL = "SELECT 1 FROM Cars WHERE Car_ID = ? AND User_ID = ?";
+        String insertSQL = "INSERT INTO CarPhotos (Car_ID, Photo_URL) VALUES (?, ?)";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass)) {
+            try (PreparedStatement check = con.prepareStatement(checkSQL)) {
+                check.setInt(1, carID);
+                check.setInt(2, userID);
+                if (!check.executeQuery().next()) return false; // not the owner
+            }
+            try (PreparedStatement ps = con.prepareStatement(insertSQL)) {
+                ps.setInt(1, carID);
+                ps.setString(2, photoURL);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Returns all photos for a given car.
+     * Columns: [0]=Photo_ID, [1]=Car_ID, [2]=Photo_URL
+     */
+    public static List<String[]> getCarPhotos(int carID) {
+        List<String[]> photos = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT Photo_ID, Car_ID, Photo_URL FROM CarPhotos WHERE Car_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, carID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    photos.add(new String[]{
+                        rs.getString("Photo_ID"),
+                        rs.getString("Car_ID"),
+                        rs.getString("Photo_URL")
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return photos;
+    }
+
+    /**
+     * Deletes a car photo if the requesting user owns the car it belongs to.
+     *
+     * @param photoID The Photo_ID to delete.
+     * @param userID  The User_ID of the requester (ownership check via Cars table).
+     * @return true if deleted, false otherwise.
+     */
+    public static boolean deleteCarPhoto(int photoID, int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        // Only delete if the photo's car belongs to userID
+        String sql = "DELETE cp FROM CarPhotos cp " +
+                     "JOIN Cars c ON cp.Car_ID = c.Car_ID " +
+                     "WHERE cp.Photo_ID = ? AND c.User_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, photoID);
+            ps.setInt(2, userID);
+            return ps.executeUpdate() == 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Returns all cars owned by a user, for use in photo-upload dropdowns.
+     * Columns: [0]=Car_ID, [1]=Make, [2]=Model, [3]=Year
+     */
+    public static List<String[]> getUserCars(int userID) {
+        List<String[]> cars = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT Car_ID, Make, Model, Year FROM Cars WHERE User_ID = ? ORDER BY Year DESC";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    cars.add(new String[]{
+                        rs.getString("Car_ID"),
+                        rs.getString("Make"),
+                        rs.getString("Model"),
+                        rs.getString("Year")
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return cars;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  EVENT PHOTOS
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Adds a photo URL to an event, only if the logged-in user manages the event's club.
+     *
+     * @param eventID  The Event_ID to attach the photo to.
+     * @param userID   The User_ID of the requester (club manager check).
+     * @param photoURL The URL string to store.
+     * @return true if inserted, false if permission denied or DB error.
+     */
+    public static boolean addEventPhoto(int eventID, int userID, String photoURL) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        // Permission check: only the club's manager may add event photos
+        String checkSQL = "SELECT 1 FROM Events e JOIN Clubs c ON e.Club_ID = c.Club_ID " +
+                          "WHERE e.Event_ID = ? AND c.Manager_ID = ?";
+        String insertSQL = "INSERT INTO EventPhotos (Event_ID, Photo_URL) VALUES (?, ?)";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass)) {
+            try (PreparedStatement check = con.prepareStatement(checkSQL)) {
+                check.setInt(1, eventID);
+                check.setInt(2, userID);
+                if (!check.executeQuery().next()) return false; // not the manager
+            }
+            try (PreparedStatement ps = con.prepareStatement(insertSQL)) {
+                ps.setInt(1, eventID);
+                ps.setString(2, photoURL);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Returns all photos for a given event.
+     * Columns: [0]=Photo_ID, [1]=Event_ID, [2]=Photo_URL
+     */
+    public static List<String[]> getEventPhotos(int eventID) {
+        List<String[]> photos = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT Photo_ID, Event_ID, Photo_URL FROM EventPhotos WHERE Event_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, eventID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    photos.add(new String[]{
+                        rs.getString("Photo_ID"),
+                        rs.getString("Event_ID"),
+                        rs.getString("Photo_URL")
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return photos;
+    }
+
+    /**
+     * Deletes an event photo if the requesting user manages the event's club.
+     *
+     * @param photoID The Photo_ID to delete.
+     * @param userID  The User_ID of the requester (manager check).
+     * @return true if deleted, false otherwise.
+     */
+    public static boolean deleteEventPhoto(int photoID, int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "DELETE ep FROM EventPhotos ep " +
+                     "JOIN Events e ON ep.Event_ID = e.Event_ID " +
+                     "JOIN Clubs c ON e.Club_ID = c.Club_ID " +
+                     "WHERE ep.Photo_ID = ? AND c.Manager_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, photoID);
+            ps.setInt(2, userID);
+            return ps.executeUpdate() == 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  SPONSORS
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Returns all companies available as potential sponsors.
+     * Columns: [0]=Company_ID, [1]=Company_Name
+     */
+    public static List<String[]> getAllCompanies() {
+        List<String[]> companies = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT Company_ID, Company_Name FROM Company ORDER BY Company_Name";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                companies.add(new String[]{
+                    rs.getString("Company_ID"),
+                    rs.getString("Company_Name")
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return companies;
+    }
+
+    /**
+     * Returns all sponsors currently linked to an event.
+     * Columns: [0]=Company_ID, [1]=Company_Name
+     */
+    public static List<String[]> getEventSponsors(int eventID) {
+        List<String[]> sponsors = new ArrayList<>();
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT c.Company_ID, c.Company_Name FROM Sponsors s " +
+                     "JOIN Company c ON s.Company_ID = c.Company_ID " +
+                     "WHERE s.Event_ID = ? ORDER BY c.Company_Name";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, eventID);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    sponsors.add(new String[]{
+                        rs.getString("Company_ID"),
+                        rs.getString("Company_Name")
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return sponsors;
+    }
+
+    /**
+     * Links a company as a sponsor for an event.
+     * Only the club manager of the event may call this (enforce in JSP).
+     * INSERT IGNORE prevents duplicate sponsor records.
+     *
+     * @param eventID   The Event_ID to sponsor.
+     * @param companyID The Company_ID to add as a sponsor.
+     * @param userID    The User_ID of the requester (club manager check).
+     * @return true if the sponsor link was created (or already existed).
+     */
+    public static boolean addSponsor(int eventID, int companyID, int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        // Permission check: only the club manager may manage sponsors
+        String checkSQL = "SELECT 1 FROM Events e JOIN Clubs c ON e.Club_ID = c.Club_ID " +
+                          "WHERE e.Event_ID = ? AND c.Manager_ID = ?";
+        String insertSQL = "INSERT IGNORE INTO Sponsors (Company_ID, Event_ID) VALUES (?, ?)";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass)) {
+            try (PreparedStatement check = con.prepareStatement(checkSQL)) {
+                check.setInt(1, eventID);
+                check.setInt(2, userID);
+                if (!check.executeQuery().next()) return false;
+            }
+            try (PreparedStatement ps = con.prepareStatement(insertSQL)) {
+                ps.setInt(1, companyID);
+                ps.setInt(2, eventID);
+                ps.executeUpdate();
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Removes a company's sponsorship from an event.
+     * Only the club manager may call this (enforce in JSP).
+     *
+     * @param eventID   The Event_ID.
+     * @param companyID The Company_ID to remove.
+     * @param userID    The User_ID of the requester (club manager check).
+     * @return true if the sponsor link was removed.
+     */
+    public static boolean removeSponsor(int eventID, int companyID, int userID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        // Permission check
+        String checkSQL = "SELECT 1 FROM Events e JOIN Clubs c ON e.Club_ID = c.Club_ID " +
+                          "WHERE e.Event_ID = ? AND c.Manager_ID = ?";
+        String deleteSQL = "DELETE FROM Sponsors WHERE Company_ID = ? AND Event_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass)) {
+            try (PreparedStatement check = con.prepareStatement(checkSQL)) {
+                check.setInt(1, eventID);
+                check.setInt(2, userID);
+                if (!check.executeQuery().next()) return false;
+            }
+            try (PreparedStatement ps = con.prepareStatement(deleteSQL)) {
+                ps.setInt(1, companyID);
+                ps.setInt(2, eventID);
+                return ps.executeUpdate() == 1;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Checks if a company is already a sponsor for an event.
+     */
+    public static boolean isSponsor(int eventID, int companyID) {
+        String url  = "jdbc:mysql://localhost:3306/carclub?autoReconnect=true&useSSL=false";
+        String user = "root";
+        String pass = "root";
+
+        String sql = "SELECT 1 FROM Sponsors WHERE Event_ID = ? AND Company_ID = ?";
+
+        try (Connection con = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, eventID);
+            ps.setInt(2, companyID);
+            return ps.executeQuery().next();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
